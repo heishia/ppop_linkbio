@@ -1,0 +1,4 @@
+"""
+Common exception handling
+"""
+

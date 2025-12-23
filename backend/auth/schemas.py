@@ -1,0 +1,4 @@
+"""
+Authentication Pydantic schemas
+"""
+
