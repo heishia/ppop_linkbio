@@ -1,18 +1,18 @@
 """
-Uvicorn server runner
+Uvicorn 서버 실행
 """
+
 import uvicorn
 
-from server.main import app
+from backend.core.config import settings
 
 
-def run_server():
-    """Run the uvicorn server"""
+def run_server() -> None:
     uvicorn.run(
-        "server.main:app",
+        "backend.main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True
+        port=settings.APP_PORT,
+        reload=settings.DEBUG
     )
 
 

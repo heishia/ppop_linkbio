@@ -1,0 +1,87 @@
+name: Slack Notifications
+
+# This workflow can be called by other workflows
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+      workflow:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      url:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine color
+        id: color
+        run: |
+          if [ "${{ inputs.status }}" == "success" ]; then
+            echo "color=good" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.status }}" == "failure" ]; then
+            echo "color=danger" >> $GITHUB_OUTPUT
+          else
+            echo "color=warning" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ inputs.workflow }} - ${{ inputs.status }}",
+              "attachments": [
+                {
+                  "color": "${{ steps.color.outputs.color }}",
+                  "fields": [
+                    {
+                      "title": "Workflow",
+                      "value": "${{ inputs.workflow }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Status",
+                      "value": "${{ inputs.status }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Environment",
+                      "value": "${{ inputs.environment }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.ref_name }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Commit",
+                      "value": "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>",
+                      "short": true
+                    },
+                    {
+                      "title": "Author",
+                      "value": "${{ github.actor }}",
+                      "short": true
+                    }
+                  ],
+                  "footer": "GitHub Actions",
+                  "footer_icon": "https://github.githubassets.com/favicon.ico",
+                  "ts": "${{ github.event.head_commit.timestamp }}"
+                }
+              ]
+            }
+

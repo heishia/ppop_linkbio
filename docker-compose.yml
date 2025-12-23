@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ppop_linkbio_backend
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    env_file:
+      - .env.dev
+    environment:
+      - APP_ENV=dev
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount source code for hot reload in development
+      - ./backend:/app/backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - ppop_network
+
+networks:
+  ppop_network:
+    driver: bridge

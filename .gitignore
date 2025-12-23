@@ -9,6 +9,8 @@ build/
 .env
 .env.local
 .env.*.local
+.env.dev
+.env.prod
 
 # IDE
 .idea/
@@ -27,4 +29,21 @@ npm-debug.log*
 # Cache
 .cache/
 .turbo/
+
+# Figma MCP
+cursor-talk-to-figma-mcp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+venv/
+env/
+ENV/
 

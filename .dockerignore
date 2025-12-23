@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.local
+.env.dev
+.env.prod
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+backend/tests/
+*.test.py
+test_*.py
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.turbo/
+
+# Node (if any)
+node_modules/
+
+# Figma MCP
+cursor-talk-to-figma-mcp/
+
+# Database files (use external DB)
+*.db
+*.sqlite
+
+# Temporary files
+tmp/
+temp/
+*.tmp
