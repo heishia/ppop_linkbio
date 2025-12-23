@@ -1,0 +1,65 @@
+import { apiClient } from "./client";
+import { User } from "./auth";
+
+export interface ProfileUpdateData {
+  display_name?: string;
+  bio?: string;
+  background_color?: string;
+}
+
+export interface ThemeUpdateData {
+  theme: string;
+}
+
+export const profileApi = {
+  getProfile: async (): Promise<{ data: User }> => {
+    const response = await apiClient.get<{ data: User }>("/api/profile");
+    return response.data;
+  },
+
+  updateProfile: async (data: ProfileUpdateData): Promise<{ data: User }> => {
+    const response = await apiClient.put<{ data: User }>("/api/profile", data);
+    return response.data;
+  },
+
+  updateTheme: async (data: ThemeUpdateData): Promise<{ data: User }> => {
+    const response = await apiClient.put<{ data: User }>(
+      "/api/profile/theme",
+      data
+    );
+    return response.data;
+  },
+
+  uploadProfileImage: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post<{ url: string }>(
+      "/api/profile/image",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+
+  uploadBackgroundImage: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post<{ url: string }>(
+      "/api/profile/background",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+};
+

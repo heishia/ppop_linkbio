@@ -1,0 +1,25 @@
+{
+  "name": "ppop-linkbio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PPOP LinkBio - Link in Bio Platform",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:backend": "python run.py",
+    "dev:web": "node scripts/dev.js",
+    "build": "cd apps/web && npm run build",
+    "start": "cd apps/web && npm start",
+    "lint": "cd apps/web && npm run lint",
+    "test": "cd apps/web && npm test",
+    "install:web": "cd apps/web && npm install",
+    "install:all": "npm run install:web"
+  },
+  "keywords": [
+    "linkbio",
+    "linktree",
+    "bio-link"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

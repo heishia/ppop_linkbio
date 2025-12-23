@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 import "./globals.css";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "700", "800"],
+  variable: "--font-nunito",
+});
 
 export const metadata: Metadata = {
   title: "PPOP LinkBio",
@@ -13,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body className={nunito.variable}>{children}</body>
     </html>
   );
 }
