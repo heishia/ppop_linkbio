@@ -8,7 +8,7 @@ console.log('\x1b[32m%s\x1b[0m', 'Starting PPOP LinkBio Development Server...\n'
 let browserOpened = false;
 
 // Start Next.js dev server
-const webDir = path.join(__dirname, '..', 'apps', 'web');
+const webDir = path.join(__dirname, '..', 'web');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const devProcess = spawn(npm, ['run', 'dev'], {

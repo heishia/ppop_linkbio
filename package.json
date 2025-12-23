@@ -7,11 +7,11 @@
     "dev": "node scripts/dev.js",
     "dev:backend": "python run.py",
     "dev:web": "node scripts/dev.js",
-    "build": "cd apps/web && npm run build",
-    "start": "cd apps/web && npm start",
-    "lint": "cd apps/web && npm run lint",
-    "test": "cd apps/web && npm test",
-    "install:web": "cd apps/web && npm install",
+    "build": "cd web && npm run build",
+    "start": "cd web && npm start",
+    "lint": "cd web && npm run lint",
+    "test": "cd web && npm test",
+    "install:web": "cd web && npm install",
     "install:all": "npm run install:web"
   },
   "keywords": [
