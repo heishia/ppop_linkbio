@@ -3,14 +3,28 @@
 import React from "react";
 import { Link } from "@/lib/api/links";
 import { publicApi } from "@/lib/api/public";
-import { Button } from "@/components/ui/Button";
+import { ButtonStyle } from "@/lib/api/auth";
 
 interface PublicLinkButtonProps {
   link: Link;
   publicLinkId: string;
+  buttonStyle?: ButtonStyle;
 }
 
-export function PublicLinkButton({ link, publicLinkId }: PublicLinkButtonProps) {
+// 버튼 스타일별 클래스 정의
+const BUTTON_STYLE_CLASSES: Record<ButtonStyle, string> = {
+  // 기본: primary 색상 배경
+  default:
+    "bg-primary text-white hover:bg-primary/90 border-transparent",
+  // 아웃라인: 흰색 배경 + 검은 얇은 외곽선
+  outline:
+    "bg-white text-gray-900 border border-gray-900 hover:bg-gray-50",
+  // 채움: 검은 배경 + 흰 텍스트
+  filled:
+    "bg-gray-900 text-white border-transparent hover:bg-gray-800",
+};
+
+export function PublicLinkButton({ link, publicLinkId, buttonStyle = "default" }: PublicLinkButtonProps) {
   const handleClick = async () => {
     try {
       // Record click using public_link_id
@@ -25,13 +39,12 @@ export function PublicLinkButton({ link, publicLinkId }: PublicLinkButtonProps) 
   };
 
   return (
-    <Button
-      variant="primary"
+    <button
       onClick={handleClick}
-      className="w-full"
+      className={`w-full rounded-xl px-4 py-3 font-semibold transition-all shadow-sm hover:shadow ${BUTTON_STYLE_CLASSES[buttonStyle]}`}
     >
       {link.title}
-    </Button>
+    </button>
   );
 }
 

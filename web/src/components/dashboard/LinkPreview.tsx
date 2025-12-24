@@ -5,18 +5,32 @@ import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import { SocialPlatformIcon } from "@/components/ui/SocialPlatformIcon";
 import { Link, SocialLink } from "@/lib/api/links";
-import { User } from "@/lib/api/auth";
+import { User, ButtonStyle } from "@/lib/api/auth";
 import { DEFAULT_BACKGROUND_COLOR } from "@/lib/constants/colors";
 import { X } from "lucide-react";
+
+// 버튼 스타일별 클래스 정의 (미리보기용)
+const BUTTON_STYLE_CLASSES: Record<ButtonStyle, string> = {
+  // 기본: primary 색상 배경
+  default:
+    "bg-primary text-white hover:bg-primary/90",
+  // 아웃라인: 흰색 배경 + 검은 얇은 외곽선
+  outline:
+    "bg-white text-gray-900 border border-gray-900 hover:bg-gray-50",
+  // 채움: 검은 배경 + 흰 텍스트
+  filled:
+    "bg-gray-900 text-white hover:bg-gray-800",
+};
 
 interface LinkPreviewProps {
   profile: User | null;
   links: Link[];
   socialLinks: SocialLink[];
+  buttonStyle?: ButtonStyle;
 }
 
 // 미리보기 전용 컴포넌트 - 대시보드에서 실제 링크 페이지가 어떻게 보일지 표시
-export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
+export function LinkPreview({ profile, links, socialLinks, buttonStyle }: LinkPreviewProps) {
   const router = useRouter();
 
   // 활성화된 링크만 필터링
@@ -28,6 +42,8 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
 
   // 사용자가 설정한 배경색 사용 (없으면 기본 화이트)
   const bgColor = profile?.background_color || DEFAULT_BACKGROUND_COLOR;
+  // 버튼 스타일 (prop > profile > default 순서로 우선순위)
+  const currentButtonStyle = buttonStyle || profile?.button_style || "default";
 
   // X 버튼 클릭 시 결제 페이지로 이동
   const handleRemoveWatermark = () => {
@@ -92,7 +108,7 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
               activeLinks.map((link) => (
                 <button
                   key={link.id}
-                  className="w-full rounded-lg bg-primary px-3 py-2 text-xs font-medium text-white shadow-sm transition-all hover:bg-primary/90 hover:shadow"
+                  className={`w-full rounded-lg px-3 py-2 text-xs font-medium shadow-sm transition-all hover:shadow ${BUTTON_STYLE_CLASSES[currentButtonStyle]}`}
                 >
                   {link.title}
                 </button>

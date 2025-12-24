@@ -21,6 +21,9 @@ export interface AuthResponse {
   user: User;
 }
 
+// 버튼 스타일 타입
+export type ButtonStyle = "default" | "outline" | "filled";
+
 export interface User {
   id: string;
   user_seq: number | null;              // 순차 번호 (링크 ID 생성용)
@@ -33,6 +36,7 @@ export interface User {
   background_image_url: string | null;
   background_color: string | null;
   theme: string;
+  button_style: ButtonStyle;            // 링크 버튼 스타일
   is_active: boolean;
   is_admin: boolean;
   created_at: string;

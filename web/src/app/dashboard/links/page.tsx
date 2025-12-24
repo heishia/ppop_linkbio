@@ -19,6 +19,22 @@ import {
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { PASTEL_COLORS } from "@/lib/constants/colors";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { ButtonStyle } from "@/lib/api/auth";
+
+// 버튼 스타일 옵션 정의
+const BUTTON_STYLES: { id: ButtonStyle; label: string; description: string }[] =
+  [
+    { id: "default", label: "기본", description: "컬러 배경" },
+    { id: "outline", label: "외곽선", description: "흰 배경 + 검은 테두리" },
+    { id: "filled", label: "채움", description: "검은 배경" },
+  ];
+
+// 버튼 스타일 미리보기용 클래스
+const BUTTON_STYLE_PREVIEW: Record<ButtonStyle, string> = {
+  default: "bg-primary text-white text-[10px]",
+  outline: "bg-white text-gray-900 border border-gray-900 text-[10px]",
+  filled: "bg-gray-900 text-white text-[10px]",
+};
 
 // SNS 아이콘 최대 개수 제한
 const MAX_SOCIAL_ICONS = 5;
@@ -72,6 +88,7 @@ export default function LinksPage() {
     display_name: "",
     bio: "",
     background_color: "#ffffff",
+    button_style: "default" as ButtonStyle,
   });
 
   // 원본 프로필 데이터 (dirty state 비교용)
@@ -79,6 +96,7 @@ export default function LinksPage() {
     display_name: "",
     bio: "",
     background_color: "#ffffff",
+    button_style: "default" as ButtonStyle,
   });
 
   // 프로필 저장 관련 상태
@@ -146,12 +164,18 @@ export default function LinksPage() {
         display_name: profile.display_name || "",
         bio: profile.bio || "",
         background_color: profile.background_color || "#ffffff",
+        button_style: (profile.button_style || "default") as ButtonStyle,
       };
       setFormData(data);
       setOriginalFormData(data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.display_name, profile?.bio, profile?.background_color]);
+  }, [
+    profile?.display_name,
+    profile?.bio,
+    profile?.background_color,
+    profile?.button_style,
+  ]);
 
   // 공개 프로필 URL 설정 (클라이언트에서만, public_link_id 기반)
   useEffect(() => {
@@ -166,7 +190,8 @@ export default function LinksPage() {
   const isProfileDirty =
     formData.display_name !== originalFormData.display_name ||
     formData.bio !== originalFormData.bio ||
-    formData.background_color !== originalFormData.background_color;
+    formData.background_color !== originalFormData.background_color ||
+    formData.button_style !== originalFormData.button_style;
 
   const validateForm = () => {
     const errors: { title?: string; url?: string } = {};
@@ -225,6 +250,7 @@ export default function LinksPage() {
         display_name: formData.display_name || undefined,
         bio: formData.bio || undefined,
         background_color: formData.background_color,
+        button_style: formData.button_style,
       });
 
       // 저장 성공 시 원본 데이터 업데이트
@@ -385,8 +411,15 @@ export default function LinksPage() {
       display_name: formData.display_name,
       bio: formData.bio,
       background_color: formData.background_color,
+      button_style: formData.button_style,
     };
-  }, [profile, formData.display_name, formData.bio, formData.background_color]);
+  }, [
+    profile,
+    formData.display_name,
+    formData.bio,
+    formData.background_color,
+    formData.button_style,
+  ]);
 
   // 이미 추가된 플랫폼 목록
   const addedPlatforms = socialLinks.map((link) => link.platform.toLowerCase());
@@ -560,6 +593,42 @@ export default function LinksPage() {
                     style={{ backgroundColor: color.hex }}
                     title={color.nameKo}
                   />
+                ))}
+              </div>
+            </div>
+
+            {/* 버튼 스타일 */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                버튼 스타일
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {BUTTON_STYLES.map((style) => (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        button_style: style.id,
+                      }))
+                    }
+                    disabled={isProfileSaving}
+                    className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 transition-all ${
+                      formData.button_style === style.id
+                        ? "border-primary ring-2 ring-primary/30"
+                        : "border-gray-200"
+                    } ${isProfileSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <div
+                      className={`w-full rounded-md px-2 py-1.5 text-center ${BUTTON_STYLE_PREVIEW[style.id]}`}
+                    >
+                      Button
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">
+                      {style.label}
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -971,6 +1040,7 @@ export default function LinksPage() {
                 profile={previewProfile}
                 links={previewLinks}
                 socialLinks={previewSocialLinks}
+                buttonStyle={formData.button_style}
               />
             </div>
 
@@ -1221,6 +1291,42 @@ export default function LinksPage() {
                         style={{ backgroundColor: color.hex }}
                         title={color.nameKo}
                       />
+                    ))}
+                  </div>
+                </div>
+
+                {/* 버튼 스타일 */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    버튼 스타일
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {BUTTON_STYLES.map((style) => (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            button_style: style.id,
+                          }))
+                        }
+                        disabled={isProfileSaving}
+                        className={`flex flex-col items-center gap-1 rounded-md border-2 p-2 transition-all hover:scale-[1.02] ${
+                          formData.button_style === style.id
+                            ? "border-primary ring-1 ring-primary/30"
+                            : "border-gray-200 hover:border-gray-300"
+                        } ${isProfileSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        <div
+                          className={`w-full rounded px-2 py-1 text-center ${BUTTON_STYLE_PREVIEW[style.id]}`}
+                        >
+                          Btn
+                        </div>
+                        <span className="text-[10px] font-medium text-gray-600">
+                          {style.label}
+                        </span>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -1502,6 +1608,7 @@ export default function LinksPage() {
             profile={previewProfile}
             links={previewLinks}
             socialLinks={previewSocialLinks}
+            buttonStyle={formData.button_style}
           />
         </div>
       </div>

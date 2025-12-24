@@ -27,14 +27,10 @@ export default function Home() {
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
             <h1 className="text-3xl font-extrabold text-gray-900 sm:text-6xl font-heading">
-              모든 것을 위한{" "}
-              <span className="block sm:inline text-primary">하나의 링크</span>
+              링크를 모아주는 <span className="text-primary">뽑링크</span>
             </h1>
-            <p className="mt-4 sm:mt-6 text-sm sm:text-2xl text-gray-600">
-              하나의 링크에 여러 링크들을 예쁘게 넣어보세요!
-            </p>
-            <p className="mt-2 sm:mt-3 text-xs sm:text-xl text-primary font-semibold">
-              간단하고 예쁜 링크바이오 뽑링크
+            <p className="mt-1 sm:mt-2 text-xl sm:text-3xl text-gray-600">
+              간단하고 예쁜 링크 바이오 만들기
             </p>
           </div>
 
@@ -45,14 +41,14 @@ export default function Home() {
               <div className="relative mx-auto w-[280px] sm:w-[320px] h-[580px] sm:h-[660px] bg-gray-900 rounded-[45px] sm:rounded-[55px] p-2 sm:p-3 shadow-2xl">
                 {/* 상단 노치/다이나믹 아일랜드 */}
                 <div className="absolute top-4 sm:top-5 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-6 sm:h-7 bg-black rounded-full z-20" />
-                
+
                 {/* 전원 버튼 */}
                 <div className="absolute -right-1 top-28 w-1 h-12 bg-gray-700 rounded-r-lg" />
-                
+
                 {/* 볼륨 버튼 */}
                 <div className="absolute -left-1 top-24 w-1 h-8 bg-gray-700 rounded-l-lg" />
                 <div className="absolute -left-1 top-36 w-1 h-8 bg-gray-700 rounded-l-lg" />
-                
+
                 {/* 스크린 영역 */}
                 <div className="w-full h-full rounded-[38px] sm:rounded-[48px] overflow-hidden">
                   <Image
@@ -65,21 +61,24 @@ export default function Home() {
                   />
                 </div>
               </div>
-              
+
               {/* 그림자 효과 */}
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[200px] sm:w-[250px] h-4 bg-gray-900/20 blur-xl rounded-full" />
             </div>
           </div>
 
           {/* CTA 버튼 */}
-          <div className="mt-10 sm:mt-14 flex flex-col items-center gap-3 sm:gap-4 sm:flex-row sm:justify-center">
+          <div className="mt-10 sm:mt-14 flex flex-row items-center justify-center gap-3 sm:gap-4">
             {isLoading ? (
               // 로딩 중에는 버튼 숨김 (깜빡임 방지)
               <div className="h-10 sm:h-12" />
             ) : isAuthenticated ? (
               // 로그인 상태: 대시보드 버튼 표시
               <Link href="/dashboard/links">
-                <Button variant="primary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                <Button
+                  variant="primary"
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                >
                   대시보드로 이동
                 </Button>
               </Link>
@@ -87,12 +86,18 @@ export default function Home() {
               // 비로그인 상태: 가입 + 로그인 버튼 표시
               <>
                 <Link href="/register">
-                  <Button variant="primary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                  <Button
+                    variant="primary"
+                    className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                  >
                     무료로 시작하기
                   </Button>
                 </Link>
                 <Link href="/login">
-                  <Button variant="secondary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                  <Button
+                    variant="secondary"
+                    className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                  >
                     로그인
                   </Button>
                 </Link>
@@ -111,34 +116,43 @@ export default function Home() {
           <div className="mt-10 sm:mt-16 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-primary/10">
-                <Link2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" strokeWidth={2} />
+                <Link2
+                  className="h-6 w-6 sm:h-8 sm:w-8 text-primary"
+                  strokeWidth={2}
+                />
               </div>
               <h3 className="mt-3 sm:mt-4 text-base sm:text-xl font-semibold text-gray-900 font-heading">
                 무제한 링크
               </h3>
-              <p className="mt-1.5 sm:mt-2 text-xs sm:text-base text-gray-600">
+              <p className="mt-1.5 sm:mt-2 text-xl sm:text-3xl text-gray-600">
                 원하는 만큼 링크를 추가하세요. 제한이 없습니다.
               </p>
             </div>
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" strokeWidth={2} />
+                <Sparkles
+                  className="h-6 w-6 sm:h-8 sm:w-8 text-primary"
+                  strokeWidth={2}
+                />
               </div>
               <h3 className="mt-3 sm:mt-4 text-base sm:text-xl font-semibold text-gray-900 font-heading">
                 커스터마이징
               </h3>
-              <p className="mt-1.5 sm:mt-2 text-xs sm:text-base text-gray-600">
+              <p className="mt-1.5 sm:mt-2 text-xl sm:text-3xl text-gray-600">
                 테마와 색상으로 나만의 스타일을 만들어보세요.
               </p>
             </div>
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-primary/10">
-                <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" strokeWidth={2} />
+                <BarChart3
+                  className="h-6 w-6 sm:h-8 sm:w-8 text-primary"
+                  strokeWidth={2}
+                />
               </div>
               <h3 className="mt-3 sm:mt-4 text-base sm:text-xl font-semibold text-gray-900 font-heading">
                 분석
               </h3>
-              <p className="mt-1.5 sm:mt-2 text-xs sm:text-base text-gray-600">
+              <p className="mt-1.5 sm:mt-2 text-xl sm:text-3xl text-gray-600">
                 링크의 클릭 수와 조회수를 추적하세요.
               </p>
             </div>
@@ -149,7 +163,7 @@ export default function Home() {
       {/* Free Appeal Section */}
       <section className="px-4 py-16 sm:py-24 bg-gradient-to-r from-primary via-blue-500 to-indigo-600">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-xs sm:text-lg text-white/80 font-medium">
+          <p className="text-xl sm:text-3xl text-white/80 font-medium">
             링크인바이오 기능 추가하면 유료?
           </p>
           <h2 className="mt-3 sm:mt-4 text-2xl sm:text-5xl font-extrabold text-white font-heading">
@@ -159,13 +173,19 @@ export default function Home() {
           <div className="mt-6 sm:mt-10 flex justify-center">
             {isAuthenticated ? (
               <Link href="/dashboard/links">
-                <Button variant="secondary" className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
+                <Button
+                  variant="secondary"
+                  className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl"
+                >
                   대시보드로 이동
                 </Button>
               </Link>
             ) : (
               <Link href="/register">
-                <Button variant="secondary" className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
+                <Button
+                  variant="secondary"
+                  className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl"
+                >
                   지금 바로 시작하기
                 </Button>
               </Link>
@@ -180,19 +200,25 @@ export default function Home() {
           <h2 className="text-xl sm:text-3xl font-bold text-gray-900 font-heading">
             시작할 준비가 되셨나요?
           </h2>
-          <p className="mt-3 sm:mt-4 text-sm sm:text-xl text-gray-600">
+          <p className="mt-3 sm:mt-4 text-xl sm:text-3xl text-gray-600">
             수천 명의 크리에이터들과 함께 콘텐츠를 공유하세요.
           </p>
           <div className="mt-6 sm:mt-8 flex justify-center">
             {isAuthenticated ? (
               <Link href="/dashboard/links">
-                <Button variant="primary" className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                <Button
+                  variant="primary"
+                  className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                >
                   대시보드로 이동
                 </Button>
               </Link>
             ) : (
               <Link href="/register">
-                <Button variant="primary" className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                <Button
+                  variant="primary"
+                  className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                >
                   링크 바이오 만들기
                 </Button>
               </Link>

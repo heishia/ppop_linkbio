@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { profileApi } from "@/lib/api/profile";
-import { User } from "@/lib/api/auth";
+import { User, ButtonStyle } from "@/lib/api/auth";
 
 interface ProfileState {
   profile: User | null;
@@ -13,6 +13,7 @@ interface ProfileState {
     display_name?: string;
     bio?: string;
     background_color?: string;
+    button_style?: ButtonStyle;
   }) => Promise<void>;
   updateTheme: (theme: string) => Promise<void>;
   uploadProfileImage: (file: File) => Promise<void>;

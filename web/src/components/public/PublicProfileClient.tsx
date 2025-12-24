@@ -51,7 +51,12 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
         {/* Links */}
         <section className="flex flex-col gap-4 py-6 pb-16">
           {activeLinks.map((link) => (
-            <PublicLinkButton key={link.id} link={link} publicLinkId={profile.public_link_id} />
+            <PublicLinkButton
+              key={link.id}
+              link={link}
+              publicLinkId={profile.public_link_id}
+              buttonStyle={profile.button_style || "default"}
+            />
           ))}
         </section>
       </MobileContainer>

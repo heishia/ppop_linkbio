@@ -4,6 +4,8 @@ import { Link, SocialLink } from "./links";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8005";
 
+import { ButtonStyle } from "./auth";
+
 export interface PublicProfile {
   public_link_id: string;               // 암호화된 공개 링크 ID
   username: string;
@@ -13,6 +15,7 @@ export interface PublicProfile {
   background_image_url: string | null;
   background_color: string | null;
   theme: string;
+  button_style: ButtonStyle;            // 링크 버튼 스타일
   links: Link[];
   social_links: SocialLink[];
 }
