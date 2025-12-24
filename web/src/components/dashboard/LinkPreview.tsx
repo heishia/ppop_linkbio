@@ -3,7 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
 import { SocialPlatformIcon } from "@/components/ui/SocialPlatformIcon";
 import { Link, SocialLink } from "@/lib/api/links";
 import { User } from "@/lib/api/auth";
@@ -19,7 +18,7 @@ interface LinkPreviewProps {
 // 미리보기 전용 컴포넌트 - 대시보드에서 실제 링크 페이지가 어떻게 보일지 표시
 export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
   const router = useRouter();
-  
+
   // 활성화된 링크만 필터링
   const activeLinks = links.filter((link) => link.is_active);
   const activeSocialLinks = socialLinks.filter((link) => link.is_active);
@@ -35,10 +34,11 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
   return (
     <div
       className="relative mx-auto h-[600px] w-[280px] overflow-hidden rounded-[40px] border-[8px] border-gray-800 shadow-xl"
-      style={{ backgroundColor: bgColor }}>
+      style={{ backgroundColor: bgColor }}
+    >
       {/* 모바일 상단 노치 */}
       <div className="absolute left-1/2 top-0 z-10 h-6 w-24 -translate-x-1/2 rounded-b-2xl bg-gray-800" />
-      
+
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <div className="h-full overflow-y-auto pt-8">
         <div className="px-4 pb-6">
@@ -47,7 +47,7 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
             <Avatar
               src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
               alt={profile?.display_name || profile?.username || "User"}
-              className="h-[60px] w-[60px]"
+              className="!h-[60px] !w-[60px]"
             />
             <h2 className="mt-2 text-center text-sm font-bold text-gray-900">
               {profile?.display_name || profile?.username || "Display Name"}
@@ -108,7 +108,7 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
               >
                 <X className="h-3 w-3" />
               </button>
-              
+
               {/* PPOPLINK 로고 */}
               <a
                 href="/"
@@ -119,13 +119,10 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
                 PPOPLINK
               </a>
             </div>
-            <p className="mt-1 text-[9px] text-gray-400">
-              Free Plan
-            </p>
+            <p className="mt-1 text-[9px] text-gray-400">Free Plan</p>
           </footer>
         </div>
       </div>
     </div>
   );
 }
-

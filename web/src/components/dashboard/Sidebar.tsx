@@ -16,11 +16,6 @@ const navItems = [
     href: "/dashboard/analytics",
     icon: "chart",
   },
-  {
-    name: "설정",
-    href: "/dashboard/settings",
-    icon: "settings",
-  },
 ];
 
 export function Sidebar() {

@@ -1,13 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useProfileStore } from "@/store/profileStore";
 import { Avatar } from "@/components/ui/Avatar";
 
 export function Header() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { logout } = useAuthStore();
+  const { profile, fetchProfile } = useProfileStore();
+
+  // 프로필 정보 로드
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleLogout = async () => {
     await logout();
@@ -23,14 +30,14 @@ export function Header() {
       <div className="flex items-center gap-3">
         {/* 프로필 사진 (동그라미) */}
         <Avatar
-          src={user?.profile_image_url || "/avatar-placeholder.jpg"}
-          alt={user?.username || "User"}
+          src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
+          alt={profile?.username || "User"}
           size={32}
         />
 
         {/* 유저 이름 (1줄로 표시) */}
         <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">
-          {user?.display_name || user?.username || "User"}
+          {profile?.display_name || profile?.username || "User"}
         </span>
 
         {/* 로그아웃 버튼 */}

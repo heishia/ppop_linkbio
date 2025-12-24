@@ -19,15 +19,14 @@ interface PricingPlan {
 const plans: PricingPlan[] = [
   {
     id: "free",
-    name: "평생 무료로 쓰기",
+    name: "무료",
     price: 0,
     period: "forever",
     description: "기본 기능을 무료로 사용하세요",
     features: [
       { text: "무제한 링크 추가", included: true },
-      { text: "기본 분석 기능", included: true },
-      { text: "기본 고객 지원", included: true },
       { text: "PPOPLINK 워터마크 표시", included: false },
+      { text: "분석 기능", included: false },
     ],
     isPopular: false,
     icon: <Zap className="h-6 w-6" />,
@@ -35,15 +34,13 @@ const plans: PricingPlan[] = [
   {
     id: "pro",
     name: "워터마크 제거하기",
-    price: 1500,
+    price: 1900,
     period: "month",
     description: "깔끔한 프로필 페이지를 만들어보세요",
     features: [
-      { text: "무료 플랜의 모든 기능", included: true },
+      { text: "무제한 링크 추가", included: true },
       { text: "PPOPLINK 워터마크 제거", included: true },
-      { text: "상세 분석 기능", included: true },
-      { text: "우선 고객 지원", included: true },
-      { text: "커스텀 테마", included: true },
+      { text: "분석 기능", included: true },
     ],
     isPopular: true,
     icon: <Crown className="h-6 w-6" />,
@@ -76,7 +73,7 @@ export default function PricingPage() {
   };
 
   const formatPrice = (price: number) => {
-    if (price === 0) return "무료";
+    if (price === 0) return "0원";
     return new Intl.NumberFormat("ko-KR").format(price) + "원";
   };
 
@@ -218,7 +215,7 @@ export default function PricingPage() {
             ) : selectedPlan === "free" ? (
               "무료로 계속 사용하기"
             ) : (
-              "워터마크 제거하기"
+              "결제하기"
             )}
           </Button>
 
