@@ -21,7 +21,10 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
 
   // 활성화된 링크만 필터링
   const activeLinks = links.filter((link) => link.is_active);
-  const activeSocialLinks = socialLinks.filter((link) => link.is_active);
+  // SNS 아이콘은 최대 5개까지만 표시
+  const activeSocialLinks = socialLinks
+    .filter((link) => link.is_active)
+    .slice(0, 5);
 
   // 사용자가 설정한 배경색 사용 (없으면 기본 화이트)
   const bgColor = profile?.background_color || DEFAULT_BACKGROUND_COLOR;

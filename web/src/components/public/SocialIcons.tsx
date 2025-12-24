@@ -6,15 +6,21 @@ interface SocialIconsProps {
   socialLinks: SocialLink[];
 }
 
+// SNS 아이콘 최대 개수 제한
+const MAX_SOCIAL_ICONS = 5;
+
 export function SocialIcons({ socialLinks }: SocialIconsProps) {
   const handleSocialClick = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  // 최대 5개까지만 표시
+  const displayedLinks = socialLinks.slice(0, MAX_SOCIAL_ICONS);
+
   return (
     <section className="py-4">
       <div className="flex items-center justify-center gap-3">
-        {socialLinks.map((social) => (
+        {displayedLinks.map((social) => (
           <button
             key={social.id}
             onClick={() => handleSocialClick(social.url)}

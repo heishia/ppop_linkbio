@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/SocialPlatformIcon";
 import { PASTEL_COLORS } from "@/lib/constants/colors";
 
+// SNS 아이콘 최대 개수 제한
+const MAX_SOCIAL_ICONS = 5;
+
 // 다중 선택 소셜 링크 상태 타입
 interface SelectedPlatform {
   platform: string;
@@ -46,6 +49,20 @@ export default function LinksPage() {
     bio: "",
     background_color: "#ffffff",
   });
+  
+  // 원본 프로필 데이터 (dirty state 비교용)
+  const [originalFormData, setOriginalFormData] = useState({
+    display_name: "",
+    bio: "",
+    background_color: "#ffffff",
+  });
+  
+  // 프로필 저장 관련 상태
+  const [isProfileSaving, setIsProfileSaving] = useState(false);
+  const [profileSaveMessage, setProfileSaveMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // 다중 선택된 플랫폼 상태
   const [selectedPlatforms, setSelectedPlatforms] = useState<SelectedPlatform[]>([]);
@@ -65,13 +82,21 @@ export default function LinksPage() {
 
   useEffect(() => {
     if (profile) {
-      setFormData({
+      const data = {
         display_name: profile.display_name || "",
         bio: profile.bio || "",
         background_color: profile.background_color || "#ffffff",
-      });
+      };
+      setFormData(data);
+      setOriginalFormData(data);
     }
   }, [profile]);
+  
+  // dirty state 계산 (프로필 변경사항 있는지)
+  const isProfileDirty = 
+    formData.display_name !== originalFormData.display_name ||
+    formData.bio !== originalFormData.bio ||
+    formData.background_color !== originalFormData.background_color;
 
   const validateForm = () => {
     const errors: { title?: string; url?: string } = {};
@@ -114,30 +139,46 @@ export default function LinksPage() {
     clearError();
   };
 
-  // 개별 프로필 필드 저장 핸들러
-  const handleSaveProfileField = useCallback(async (field: keyof typeof formData) => {
-    if (savingField) return;
-    setSavingField(field);
-    try {
-      await updateProfile({ [field]: formData[field] });
-    } catch (error) {
-      console.error(`Failed to save ${field}:`, error);
-    } finally {
-      setSavingField(null);
-    }
-  }, [formData, updateProfile, savingField]);
-
-  // 배경 색상 변경 및 저장
-  const handleBackgroundColorChange = async (color: string) => {
+  // 배경 색상 변경 (로컬 상태만 업데이트)
+  const handleBackgroundColorChange = (color: string) => {
     setFormData((prev) => ({ ...prev, background_color: color }));
-    setSavingField("background_color");
+  };
+  
+  // 프로필 저장 핸들러 (모든 필드 한번에 저장)
+  const handleSaveProfile = async () => {
+    if (isProfileSaving || !isProfileDirty) return;
+    
+    setIsProfileSaving(true);
+    setProfileSaveMessage(null);
+    clearProfileError();
+    
     try {
-      await updateProfile({ background_color: color });
+      await updateProfile({
+        display_name: formData.display_name || undefined,
+        bio: formData.bio || undefined,
+        background_color: formData.background_color,
+      });
+      
+      // 저장 성공 시 원본 데이터 업데이트
+      setOriginalFormData({ ...formData });
+      setProfileSaveMessage({ type: "success", text: "Profile saved successfully!" });
+      
+      // 3초 후 메시지 숨기기
+      setTimeout(() => {
+        setProfileSaveMessage(null);
+      }, 3000);
     } catch (error) {
-      console.error("Failed to save background color:", error);
+      console.error("Failed to save profile:", error);
+      setProfileSaveMessage({ type: "error", text: "Failed to save profile. Please try again." });
     } finally {
-      setSavingField(null);
+      setIsProfileSaving(false);
     }
+  };
+  
+  // 프로필 변경사항 취소 (원본 데이터로 복원)
+  const handleCancelProfileChanges = () => {
+    setFormData({ ...originalFormData });
+    setProfileSaveMessage(null);
   };
 
   // 소셜 링크 추가 저장 (개별)
@@ -158,13 +199,22 @@ export default function LinksPage() {
     }
   };
 
+  // 현재 총 SNS 아이콘 개수 (저장된 것 + 선택 중인 것)
+  const totalSocialCount = socialLinks.length + selectedPlatforms.length;
+  const canAddMoreSocial = totalSocialCount < MAX_SOCIAL_ICONS;
+
   // 플랫폼 토글 선택/해제
   const handleTogglePlatform = (platformId: string) => {
     setSelectedPlatforms(prev => {
       const existing = prev.find(p => p.platform === platformId);
       if (existing) {
+        // 이미 선택된 경우 해제
         return prev.filter(p => p.platform !== platformId);
       } else {
+        // 최대 개수 체크 (기존 + 선택 중인 것 합쳐서 5개까지)
+        if (socialLinks.length + prev.length >= MAX_SOCIAL_ICONS) {
+          return prev;
+        }
         return [...prev, { platform: platformId, url: "" }];
       }
     });
@@ -249,7 +299,7 @@ export default function LinksPage() {
     (p) => !addedPlatforms.includes(p.id)
   );
 
-  // 미리보기용 소셜 링크 (기존 + 선택 중인 것 합침)
+  // 미리보기용 소셜 링크 (기존 + 선택 중인 것 합침, 최대 5개까지만)
   const previewSocialLinks = [
     ...socialLinks,
     ...selectedPlatforms.map((p, idx) => ({
@@ -259,7 +309,7 @@ export default function LinksPage() {
       is_active: true,
       display_order: socialLinks.length + idx,
     })),
-  ];
+  ].slice(0, MAX_SOCIAL_ICONS);
 
   // 미리보기용 링크 (기존 + 모달에서 입력 중인 것 합침)
   const previewLinks = [
@@ -292,9 +342,9 @@ export default function LinksPage() {
       {/* 왼쪽: 설정 영역 */}
       <div className="flex-1 space-y-4">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">내 페이지 편집</h1>
+          <h1 className="text-2xl font-bold text-gray-900">내페이지 수정</h1>
           <p className="mt-1 text-sm text-gray-600">
-            프로필과 링크를 한 곳에서 관리하세요 (Enter 키로 각 항목 저장)
+            프로필과 링크를 한 곳에서 관리하세요
           </p>
         </div>
 
@@ -306,9 +356,17 @@ export default function LinksPage() {
 
         {/* 프로필 설정 카드 */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">프로필 설정</CardTitle>
-          </CardHeader>
+          {profileSaveMessage && (
+            <div
+              className={`mx-6 mb-2 rounded-lg p-2 text-sm ${
+                profileSaveMessage.type === "success"
+                  ? "bg-green-50 text-green-700"
+                  : "bg-red-50 text-red-700"
+              }`}
+            >
+              {profileSaveMessage.text}
+            </div>
+          )}
           <CardContent>
             <div className="flex gap-6">
               {/* 프로필 정보 */}
@@ -350,14 +408,8 @@ export default function LinksPage() {
                       display_name: e.target.value,
                     }))
                   }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSaveProfileField("display_name");
-                    }
-                  }}
-                  placeholder="이름을 입력하세요 (Enter로 저장)"
-                  disabled={savingField === "display_name"}
+                  placeholder="이름을 입력하세요"
+                  disabled={isProfileSaving}
                 />
 
                 <Textarea
@@ -366,20 +418,14 @@ export default function LinksPage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, bio: e.target.value }))
                   }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                      e.preventDefault();
-                      handleSaveProfileField("bio");
-                    }
-                  }}
-                  placeholder="자기소개를 작성하세요 (Ctrl+Enter로 저장)"
+                  placeholder="자기소개를 작성하세요"
                   rows={2}
-                  disabled={savingField === "bio"}
+                  disabled={isProfileSaving}
                 />
 
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                    배경 색상 {savingField === "background_color" && <span className="text-xs text-gray-500">(저장 중...)</span>}
+                    배경 색상
                   </label>
                   <div className="grid grid-cols-6 gap-1.5">
                     {PASTEL_COLORS.map((color) => (
@@ -387,12 +433,12 @@ export default function LinksPage() {
                         key={color.id}
                         type="button"
                         onClick={() => handleBackgroundColorChange(color.hex)}
-                        disabled={savingField === "background_color"}
+                        disabled={isProfileSaving}
                         className={`h-8 w-8 rounded-md border-2 transition-all hover:scale-105 ${
                           formData.background_color.toLowerCase() === color.hex.toLowerCase()
                             ? "border-primary ring-2 ring-primary/30 scale-110"
                             : "border-gray-200 hover:border-gray-300"
-                        } ${savingField === "background_color" ? "opacity-50 cursor-not-allowed" : ""}`}
+                        } ${isProfileSaving ? "opacity-50 cursor-not-allowed" : ""}`}
                         style={{ backgroundColor: color.hex }}
                         title={color.nameKo}
                       />
@@ -401,13 +447,8 @@ export default function LinksPage() {
                 </div>
               </div>
 
-              {/* 구분선 */}
-              <div className="w-px bg-gray-200" />
-
               {/* SNS 아이콘 설정 */}
               <div className="flex-1 space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700">SNS 아이콘</h3>
-                
                 {/* 기존 소셜 링크 목록 */}
                 {socialLinks.length > 0 && (
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
@@ -507,23 +548,31 @@ export default function LinksPage() {
                 {availablePlatforms.length > 0 && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1.5">
-                      아이콘 추가 (다중선택)
+                      아이콘 추가 (최대 {MAX_SOCIAL_ICONS}개) - {socialLinks.length}/{MAX_SOCIAL_ICONS}
+                      {!canAddMoreSocial && (
+                        <span className="ml-1 text-red-500">MAX</span>
+                      )}
                     </p>
                     <div className="grid grid-cols-5 gap-1">
                       {availablePlatforms.map((platform) => {
                         const isSelected = selectedPlatforms.some(
                           (p) => p.platform === platform.id
                         );
+                        // 최대 개수 도달 시 선택되지 않은 항목은 비활성화
+                        const isDisabled = !isSelected && !canAddMoreSocial;
                         return (
                           <button
                             key={platform.id}
                             onClick={() => handleTogglePlatform(platform.id)}
+                            disabled={isDisabled}
                             className={`flex flex-col items-center gap-0.5 rounded-lg border p-1 transition-all ${
                               isSelected
                                 ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+                                : isDisabled
+                                ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
                                 : "border-gray-200 bg-white hover:bg-gray-50"
                             }`}
-                            title={platform.name}
+                            title={isDisabled ? `SNS 아이콘은 최대 ${MAX_SOCIAL_ICONS}개까지 추가할 수 있습니다` : platform.name}
                           >
                             <SocialPlatformIcon
                               platform={platform.id}
@@ -585,6 +634,26 @@ export default function LinksPage() {
                 )}
               </div>
             </div>
+            
+            {/* 프로필 저장 버튼 영역 - 카드 하단 오른쪽 */}
+            {isProfileDirty && (
+              <div className="mt-3 flex justify-end gap-1.5">
+                <button
+                  onClick={handleCancelProfileChanges}
+                  disabled={isProfileSaving}
+                  className="rounded px-2 py-1 text-[11px] text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={isProfileSaving}
+                  className="rounded bg-primary px-3 py-1 text-[11px] text-white hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {isProfileSaving ? "..." : "Save"}
+                </button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

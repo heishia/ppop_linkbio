@@ -22,11 +22,7 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4">
-      <div>
-        <h1 className="text-base font-semibold text-gray-900">Dashboard</h1>
-      </div>
-
+    <header className="flex h-14 items-center justify-end border-b border-gray-200 bg-white px-4">
       <div className="flex items-center gap-3">
         {/* 프로필 사진 (동그라미) */}
         <Avatar
