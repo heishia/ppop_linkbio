@@ -6,7 +6,6 @@ import { useProfileStore } from "@/store/profileStore";
 import { ColorPicker } from "@/components/ui/ColorPicker";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { DEFAULT_BACKGROUND_COLOR } from "@/lib/constants/colors";
 
@@ -23,7 +22,7 @@ interface DraftData {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { profile, isLoading, error, fetchProfile, updateProfile, uploadProfileImage } =
+  const { profile, isLoading, error: _error, fetchProfile, updateProfile, uploadProfileImage } =
     useProfileStore();
 
   const [displayName, setDisplayName] = useState("");
@@ -43,7 +42,7 @@ export default function SettingsPage() {
   const [isDirty, setIsDirty] = useState(false);
   
   // 임시저장 데이터 존재 여부
-  const [hasDraft, setHasDraft] = useState(false);
+  const [_hasDraft, setHasDraft] = useState(false);
   
   // 라우터 변경 감지용
   const isNavigating = useRef(false);
@@ -204,7 +203,7 @@ export default function SettingsPage() {
   };
 
   // 변경사항 취소 (서버 데이터로 복원)
-  const handleCancel = () => {
+  const _handleCancel = () => {
     if (originalData) {
       setDisplayName(originalData.display_name);
       setBio(originalData.bio);
