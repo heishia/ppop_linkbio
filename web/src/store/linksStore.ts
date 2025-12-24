@@ -1,6 +1,31 @@
 import { create } from "zustand";
 import { linksApi, Link, SocialLink } from "@/lib/api/links";
 
+// API 에러를 문자열로 변환하는 헬퍼 함수
+function parseApiError(error: any, fallbackMessage: string): string {
+  const detail = error.response?.data?.detail;
+  if (!detail) return fallbackMessage;
+
+  // 문자열인 경우 그대로 반환
+  if (typeof detail === "string") return detail;
+
+  // 배열인 경우 (Pydantic validation error)
+  if (Array.isArray(detail)) {
+    // msg 필드들을 추출하여 하나의 문자열로 합침
+    const messages = detail
+      .map((err: { msg?: string }) => err.msg)
+      .filter(Boolean);
+    return messages.length > 0 ? messages.join(", ") : fallbackMessage;
+  }
+
+  // 객체인 경우 msg 필드가 있으면 사용
+  if (typeof detail === "object" && detail.msg) {
+    return detail.msg;
+  }
+
+  return fallbackMessage;
+}
+
 interface LinksState {
   links: Link[];
   socialLinks: SocialLink[];
@@ -26,7 +51,7 @@ interface LinksState {
   clearError: () => void;
 }
 
-export const useLinksStore = create<LinksState>((set, get) => ({
+export const useLinksStore = create<LinksState>((set) => ({
   links: [],
   socialLinks: [],
   isLoading: false,
@@ -39,7 +64,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       set({ links: response.data, isLoading: false });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to fetch links",
+        error: parseApiError(error, "Failed to fetch links"),
         isLoading: false,
       });
     }
@@ -64,7 +89,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to create link",
+        error: parseApiError(error, "Failed to create link"),
         isLoading: false,
       });
       throw error;
@@ -81,7 +106,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to update link",
+        error: parseApiError(error, "Failed to update link"),
       });
       throw error;
     }
@@ -95,7 +120,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to delete link",
+        error: parseApiError(error, "Failed to delete link"),
       });
       throw error;
     }
@@ -107,7 +132,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       set({ links: response.data });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to reorder links",
+        error: parseApiError(error, "Failed to reorder links"),
       });
       throw error;
     }
@@ -123,7 +148,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to create social link",
+        error: parseApiError(error, "Failed to create social link"),
         isLoading: false,
       });
       throw error;
@@ -140,7 +165,7 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to update social link",
+        error: parseApiError(error, "Failed to update social link"),
       });
       throw error;
     }
@@ -150,11 +175,13 @@ export const useLinksStore = create<LinksState>((set, get) => ({
     try {
       await linksApi.deleteSocialLink(socialLinkId);
       set((state) => ({
-        socialLinks: state.socialLinks.filter((link) => link.id !== socialLinkId),
+        socialLinks: state.socialLinks.filter(
+          (link) => link.id !== socialLinkId
+        ),
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to delete social link",
+        error: parseApiError(error, "Failed to delete social link"),
       });
       throw error;
     }
@@ -162,4 +189,3 @@ export const useLinksStore = create<LinksState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 }));
-

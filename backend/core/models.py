@@ -26,6 +26,12 @@ class SocialPlatform(str, Enum):
     LINKEDIN = "linkedin"
     GITHUB = "github"
     WEBSITE = "website"
+    # 추가 플랫폼들
+    NAVERBLOG = "naverblog"
+    DISCORD = "discord"
+    TWITCH = "twitch"
+    SPOTIFY = "spotify"
+    SOUNDCLOUD = "soundcloud"
 
 
 # Base Models

@@ -2,6 +2,31 @@ import { create } from "zustand";
 import { profileApi } from "@/lib/api/profile";
 import { User, ButtonStyle } from "@/lib/api/auth";
 
+// API 에러를 문자열로 변환하는 헬퍼 함수
+function parseApiError(error: any, fallbackMessage: string): string {
+  const detail = error.response?.data?.detail;
+  if (!detail) return fallbackMessage;
+
+  // 문자열인 경우 그대로 반환
+  if (typeof detail === "string") return detail;
+
+  // 배열인 경우 (Pydantic validation error)
+  if (Array.isArray(detail)) {
+    // msg 필드들을 추출하여 하나의 문자열로 합침
+    const messages = detail
+      .map((err: { msg?: string }) => err.msg)
+      .filter(Boolean);
+    return messages.length > 0 ? messages.join(", ") : fallbackMessage;
+  }
+
+  // 객체인 경우 msg 필드가 있으면 사용
+  if (typeof detail === "object" && detail.msg) {
+    return detail.msg;
+  }
+
+  return fallbackMessage;
+}
+
 interface ProfileState {
   profile: User | null;
   isLoading: boolean;
@@ -33,7 +58,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       set({ profile: response.data, isLoading: false });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to fetch profile",
+        error: parseApiError(error, "Failed to fetch profile"),
         isLoading: false,
       });
     }
@@ -46,7 +71,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       set({ profile: response.data, isLoading: false });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to update profile",
+        error: parseApiError(error, "Failed to update profile"),
         isLoading: false,
       });
       throw error;
@@ -59,7 +84,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       set({ profile: response.data });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to update theme",
+        error: parseApiError(error, "Failed to update theme"),
       });
       throw error;
     }
@@ -78,7 +103,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to upload image",
+        error: parseApiError(error, "Failed to upload image"),
         isLoading: false,
       });
       throw error;
@@ -98,7 +123,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       }));
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || "Failed to upload background",
+        error: parseApiError(error, "Failed to upload background"),
         isLoading: false,
       });
       throw error;
@@ -107,4 +132,3 @@ export const useProfileStore = create<ProfileState>((set) => ({
 
   clearError: () => set({ error: null }),
 }));
-

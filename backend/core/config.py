@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 5
     
     # Plan Limits
-    FREE_MAX_LINKS: int = 5
-    FREE_MAX_SOCIAL_LINKS: int = 3
+    FREE_MAX_LINKS: int = 6
+    FREE_MAX_SOCIAL_LINKS: int = 5
     
     # Logging
     LOG_LEVEL: str = "INFO"

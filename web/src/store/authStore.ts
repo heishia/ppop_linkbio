@@ -1,6 +1,32 @@
 import { create } from "zustand";
 import { authApi, User, RegisterData, LoginData } from "@/lib/api/auth";
 
+// API 에러를 문자열로 변환하는 헬퍼 함수
+function parseApiError(error: unknown, fallbackMessage: string): string {
+  const axiosError = error as { response?: { data?: { detail?: unknown } } };
+  const detail = axiosError.response?.data?.detail;
+  if (!detail) return fallbackMessage;
+
+  // 문자열인 경우 그대로 반환
+  if (typeof detail === "string") return detail;
+
+  // 배열인 경우 (Pydantic validation error)
+  if (Array.isArray(detail)) {
+    // msg 필드들을 추출하여 하나의 문자열로 합침
+    const messages = detail
+      .map((err: { msg?: string }) => err.msg)
+      .filter(Boolean);
+    return messages.length > 0 ? messages.join(", ") : fallbackMessage;
+  }
+
+  // 객체인 경우 msg 필드가 있으면 사용
+  if (typeof detail === "object" && detail !== null && "msg" in detail) {
+    return String((detail as { msg: unknown }).msg);
+  }
+
+  return fallbackMessage;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -37,11 +63,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail || "Login failed. Please try again.";
+    } catch (error: unknown) {
       set({
-        error: errorMessage,
+        error: parseApiError(error, "Login failed. Please try again."),
         isLoading: false,
       });
       throw error;
@@ -64,12 +88,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail ||
-        "Registration failed. Please try again.";
+    } catch (error: unknown) {
       set({
-        error: errorMessage,
+        error: parseApiError(error, "Registration failed. Please try again."),
         isLoading: false,
       });
       throw error;
@@ -122,4 +143,3 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearError: () => set({ error: null }),
 }));
-
