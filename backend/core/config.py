@@ -13,7 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # App Configuration
     APP_ENV: Literal["dev", "prod"] = "dev"
-    APP_NAME: str = "PPOP LinkBio"
+    APP_NAME: str = "PPOPLINK"
     APP_PORT: int = 8005
     
     # Supabase

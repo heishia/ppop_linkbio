@@ -10,7 +10,6 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ['supabase.co'],
     remotePatterns: [
       {
         protocol: 'https',

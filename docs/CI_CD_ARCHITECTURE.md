@@ -2,7 +2,7 @@
 
 ## Overview
 
-PPOP LinkBio uses a Release-based CI/CD pipeline with parallel workflows for Web and Backend deployments.
+PPOPLINK uses a Release-based CI/CD pipeline with parallel workflows for Web and Backend deployments.
 
 ## Architecture Diagram
 
@@ -226,7 +226,7 @@ backend/tests/
   "workflow": "Backend Production Deployment",
   "status": "success",
   "environment": "production",
-  "url": "https://api.ppop.link",
+  "url": "https://api.ppoplink.com",
   "branch": "main",
   "commit": "abc123",
   "author": "developer"

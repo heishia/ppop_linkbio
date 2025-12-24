@@ -22,7 +22,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "h-[50px] w-full rounded-button font-extrabold text-button transition-all duration-200",
+        "h-[50px] w-full rounded-button font-extrabold text-button transition-all duration-200 flex items-center justify-center",
         variantStyles[variant],
         className
       )}

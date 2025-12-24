@@ -1,4 +1,4 @@
--- PPOP LinkBio Seed Data
+-- PPOPLINK Seed Data
 -- 테스트용 초기 데이터
 
 -- 관리자 계정 (비밀번호: Admin123!)
@@ -6,7 +6,7 @@ INSERT INTO users (id, username, email, password_hash, display_name, is_admin, i
 VALUES (
     'a0000000-0000-0000-0000-000000000001',
     'admin',
-    'admin@ppop.link',
+    'admin@ppoplink.com',
     '$2b$12$etZp1hYuN5HJbwodDtv0duW8KcBw2n/JW2OpmIJ.mooM97dKAzOV.',
     'Administrator',
     TRUE,

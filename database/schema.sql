@@ -1,4 +1,4 @@
--- PPOP LinkBio Database Schema
+-- PPOPLINK Database Schema
 -- Supabase PostgreSQL
 
 -- Enable UUID extension

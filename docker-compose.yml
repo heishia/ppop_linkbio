@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ppop_linkbio_backend
+    container_name: ppoplink_backend
     ports:
       - "${APP_PORT:-8000}:8000"
     env_file:
@@ -24,8 +24,8 @@ services:
       retries: 3
       start_period: 5s
     networks:
-      - ppop_network
+      - ppoplink_network
 
 networks:
-  ppop_network:
+  ppoplink_network:
     driver: bridge

@@ -1,5 +1,5 @@
 """
-PPOP LinkBio Backend Server Launcher
+PPOPLINK Backend Server Launcher
 Run from project root: python run.py
 """
 
@@ -16,7 +16,7 @@ from backend.run import run_server
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("PPOP LinkBio Backend Server")
+    print("PPOPLINK Backend Server")
     print("=" * 60)
     print()
     run_server()

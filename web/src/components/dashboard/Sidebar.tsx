@@ -7,14 +7,9 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   {
-    name: "링크",
+    name: "내 페이지",
     href: "/dashboard/links",
     icon: "link",
-  },
-  {
-    name: "외관",
-    href: "/dashboard/appearance",
-    icon: "palette",
   },
   {
     name: "설정",
@@ -30,7 +25,7 @@ export function Sidebar() {
     <aside className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
       <div className="flex h-16 items-center border-b border-gray-200 px-6">
         <Link href="/dashboard" className="text-xl font-extrabold text-primary">
-          PPOP LinkBio
+          PPOPLINK
         </Link>
       </div>
 

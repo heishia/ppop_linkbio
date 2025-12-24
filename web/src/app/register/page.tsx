@@ -7,7 +7,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="text-3xl font-extrabold text-primary">
-            PPOP LinkBio
+            PPOPLINK
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-gray-900">
             계정 만들기

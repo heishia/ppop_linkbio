@@ -26,7 +26,7 @@ def create_app() -> FastAPI:
         # Initialize Sentry
         init_sentry()
         app = FastAPI(
-            title="PPOP LinkBio API",
+            title="PPOPLINK API",
             description="Link in bio SaaS service API",
             version="0.1.0",
             docs_url=f"{settings.API_PREFIX}/docs" if settings.DEBUG else None,
@@ -141,7 +141,7 @@ def setup_routers(app: FastAPI) -> None:
     @app.get("/")
     async def root():
         return {
-            "message": "PPOP LinkBio API",
+            "message": "PPOPLINK API",
             "version": "0.1.0",
             "docs": f"{settings.API_PREFIX}/docs" if settings.DEBUG else None
         }

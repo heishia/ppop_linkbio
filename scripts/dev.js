@@ -3,7 +3,7 @@
 const { spawn, exec } = require('child_process');
 const path = require('path');
 
-console.log('\x1b[32m%s\x1b[0m', 'Starting PPOP LinkBio Development Servers...\n');
+console.log('\x1b[32m%s\x1b[0m', 'Starting PPOPLINK Development Servers...\n');
 
 let browserOpened = false;
 

@@ -1,4 +1,4 @@
 """
-Test suite for PPOP LinkBio Backend
+Test suite for PPOPLINK Backend
 """
 

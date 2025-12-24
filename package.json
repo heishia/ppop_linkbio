@@ -1,8 +1,8 @@
 {
-  "name": "ppop-linkbio",
+  "name": "ppoplink",
   "version": "1.0.0",
   "private": true,
-  "description": "PPOP LinkBio - Link in Bio Platform",
+  "description": "PPOPLINK - Link in Bio Platform",
   "scripts": {
     "dev": "node scripts/dev.js",
     "dev:backend": "python run.py",
@@ -15,6 +15,7 @@
     "install:all": "npm run install:web"
   },
   "keywords": [
+    "ppoplink",
     "linkbio",
     "linktree",
     "bio-link"

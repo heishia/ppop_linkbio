@@ -1,4 +1,4 @@
-# PPOP LinkBio
+# PPOPLINK
 
 Link in Bio SaaS Service - Linktree Alternative
 
@@ -16,7 +16,7 @@ Link in Bio SaaS Service - Linktree Alternative
 ## Project Structure
 
 ```
-ppop_linkbio/
+ppoplink/
 ├── apps/
 │   └── web/              # Next.js frontend application
 │       ├── src/
@@ -55,8 +55,8 @@ ppop_linkbio/
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-org/ppop_linkbio.git
-cd ppop_linkbio
+git clone https://github.com/your-org/ppoplink.git
+cd ppoplink
 ```
 
 ### 2. Backend Setup
@@ -311,7 +311,7 @@ See `.env.example` for the complete list. Key variables:
 ```env
 # App Configuration
 APP_ENV=dev                    # dev or prod
-APP_NAME=PPOP LinkBio
+APP_NAME=PPOPLINK
 APP_PORT=8000
 
 # Database (Supabase)
@@ -431,5 +431,5 @@ MIT
 ## Support
 
 - Documentation: [docs/](docs/)
-- Issues: [GitHub Issues](https://github.com/your-org/ppop_linkbio/issues)
-- Email: support@ppop.link
+- Issues: [GitHub Issues](https://github.com/your-org/ppoplink/issues)
+- Email: support@ppoplink.com

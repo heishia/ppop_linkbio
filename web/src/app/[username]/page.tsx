@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps) {
     const { data: profile } = await publicApi.getPublicProfile(username);
 
     return {
-      title: `${profile.display_name || profile.username} | PPOP LinkBio`,
+      title: `${profile.display_name || profile.username} | PPOPLINK`,
       description: profile.bio || `Check out ${profile.username}'s links`,
       openGraph: {
         title: profile.display_name || profile.username,
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: PageProps) {
     };
   } catch (error) {
     return {
-      title: "profile not found | PPOP LinkBio",
+      title: "profile not found | PPOPLINK",
     };
   }
 }

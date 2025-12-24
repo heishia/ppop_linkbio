@@ -8,7 +8,7 @@ from typing import Optional
 
 
 def setup_logger(
-    name: str = "ppop_linkbio",
+    name: str = "ppoplink",
     level: int = logging.INFO,
     log_format: Optional[str] = None
 ) -> logging.Logger:
@@ -36,5 +36,5 @@ logger = setup_logger()
 
 
 def get_logger(name: str) -> logging.Logger:
-    return logging.getLogger(f"ppop_linkbio.{name}")
+    return logging.getLogger(f"ppoplink.{name}")
 
