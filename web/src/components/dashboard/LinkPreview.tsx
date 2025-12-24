@@ -122,7 +122,6 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
                 PPOPLINK
               </a>
             </div>
-            <p className="mt-1 text-[9px] text-gray-400">Free Plan</p>
           </footer>
         </div>
       </div>

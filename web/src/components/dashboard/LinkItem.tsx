@@ -53,8 +53,8 @@ export function LinkItem({ link }: LinkItemProps) {
 
   if (isEditing) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="space-y-3">
+      <div className="rounded-lg border border-gray-200 bg-white p-2">
+        <div className="space-y-2">
           <Input
             label="제목"
             value={editData.title}
@@ -71,17 +71,13 @@ export function LinkItem({ link }: LinkItemProps) {
             }
             placeholder="https://example.com"
           />
-          <div className="flex gap-2">
-            <Button variant="primary" onClick={handleSave} className="flex-1">
+          <div className="flex gap-1.5">
+            <button onClick={handleSave} className="flex-1 rounded bg-primary px-2 py-1 text-[11px] text-white hover:bg-primary/90">
               저장
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleCancel}
-              className="flex-1"
-            >
+            </button>
+            <button onClick={handleCancel} className="flex-1 rounded border border-gray-300 px-2 py-1 text-[11px] text-gray-600 hover:bg-gray-50">
               취소
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -89,10 +85,10 @@ export function LinkItem({ link }: LinkItemProps) {
   }
 
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4">
+    <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2">
       <div className="cursor-grab text-gray-400">
         <svg
-          className="h-6 w-6"
+          className="h-4 w-4"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -106,25 +102,24 @@ export function LinkItem({ link }: LinkItemProps) {
         </svg>
       </div>
 
-      <div className="flex-1">
-        <h3 className="font-semibold text-gray-900">{link.title}</h3>
-        <p className="text-sm text-gray-500 truncate">{link.url}</p>
-        <p className="text-xs text-gray-400 mt-1">
-          클릭 {link.click_count}회
-        </p>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-medium text-xs text-gray-900 truncate">{link.title}</h3>
+        <p className="text-[10px] text-gray-500 truncate">{link.url}</p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <span className="text-[10px] text-gray-400 flex-shrink-0">{link.click_count}</span>
+
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         <Switch
           checked={link.is_active}
           onChange={handleToggle}
         />
         <button
           onClick={() => setIsEditing(true)}
-          className="text-gray-600 hover:text-primary transition-colors"
+          className="text-gray-400 hover:text-primary transition-colors"
         >
           <svg
-            className="h-5 w-5"
+            className="h-3.5 w-3.5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -139,10 +134,10 @@ export function LinkItem({ link }: LinkItemProps) {
         </button>
         <button
           onClick={handleDelete}
-          className="text-gray-600 hover:text-red-500 transition-colors"
+          className="text-gray-400 hover:text-red-500 transition-colors"
         >
           <svg
-            className="h-5 w-5"
+            className="h-3.5 w-3.5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

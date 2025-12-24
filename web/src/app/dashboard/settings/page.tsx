@@ -397,53 +397,16 @@ export default function SettingsPage() {
         />
       </section>
 
-      {/* 기존 버튼 영역 (상단) */}
-      <div className="flex justify-end gap-3">
-        <Button
-          variant="secondary"
-          onClick={handleCancel}
-          disabled={isSaving || !isDirty}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={saveDraft}
+      {/* 플로팅 저장 버튼 (오른쪽 하단) */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={handleSave}
           disabled={isSaving}
+          className="px-8 py-3 rounded-full shadow-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white"
         >
-          Save Draft
-        </Button>
+          {isSaving ? "Saving..." : "Save"}
+        </button>
       </div>
-
-      {/* 플로팅 저장 버튼 (오른쪽 하단) - 변경사항 있을 때만 표시 */}
-      {isDirty && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl bg-white p-4 shadow-2xl border border-gray-200">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-900">Unsaved changes</span>
-            <span className="text-xs text-gray-500">
-              {hasDraft ? "Draft saved locally" : "Changes not saved"}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="text-sm px-3 py-2"
-            >
-              Discard
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="text-sm px-4 py-2"
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

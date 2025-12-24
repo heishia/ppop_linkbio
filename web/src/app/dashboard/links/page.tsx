@@ -338,18 +338,18 @@ export default function LinksPage() {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-4">
       {/* 왼쪽: 설정 영역 */}
-      <div className="flex-1 space-y-4">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">내페이지 수정</h1>
-          <p className="mt-1 text-sm text-gray-600">
+      <div className="flex-1 space-y-3 min-w-0">
+        <div className="mb-2">
+          <h1 className="text-xl font-bold text-gray-900">내페이지 수정</h1>
+          <p className="text-xs text-gray-600">
             프로필과 링크를 한 곳에서 관리하세요
           </p>
         </div>
 
         {(error || profileError) && (
-          <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600">
+          <div className="mb-2 rounded-lg bg-red-50 p-2 text-xs text-red-600">
             {error || profileError}
           </div>
         )}
@@ -358,7 +358,7 @@ export default function LinksPage() {
         <Card>
           {profileSaveMessage && (
             <div
-              className={`mx-6 mb-2 rounded-lg p-2 text-sm ${
+              className={`mx-4 mb-1 rounded p-1.5 text-xs ${
                 profileSaveMessage.type === "success"
                   ? "bg-green-50 text-green-700"
                   : "bg-red-50 text-red-700"
@@ -367,10 +367,10 @@ export default function LinksPage() {
               {profileSaveMessage.text}
             </div>
           )}
-          <CardContent>
-            <div className="flex gap-6">
+          <CardContent className="p-4">
+            <div className="flex gap-4">
               {/* 프로필 정보 */}
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 space-y-2 min-w-0">
                 <div className="flex items-center gap-3">
                   <Avatar
                     src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
@@ -448,10 +448,10 @@ export default function LinksPage() {
               </div>
 
               {/* SNS 아이콘 설정 */}
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 space-y-2 min-w-0">
                 {/* 기존 소셜 링크 목록 */}
                 {socialLinks.length > 0 && (
-                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  <div className="space-y-1 max-h-28 overflow-y-auto">
                     {socialLinks.map((link) => (
                       <div
                         key={link.id}
@@ -635,46 +635,44 @@ export default function LinksPage() {
               </div>
             </div>
             
-            {/* 프로필 저장 버튼 영역 - 카드 하단 오른쪽 */}
-            {isProfileDirty && (
-              <div className="mt-3 flex justify-end gap-1.5">
-                <button
-                  onClick={handleCancelProfileChanges}
-                  disabled={isProfileSaving}
-                  className="rounded px-2 py-1 text-[11px] text-gray-500 hover:bg-gray-100 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveProfile}
-                  disabled={isProfileSaving}
-                  className="rounded bg-primary px-3 py-1 text-[11px] text-white hover:bg-primary/90 disabled:opacity-50"
-                >
-                  {isProfileSaving ? "..." : "Save"}
-                </button>
-              </div>
-            )}
+            {/* 프로필 저장 버튼 영역 - 카드 하단 오른쪽 (항상 표시, 변경사항 있을 때만 활성화) */}
+            <div className="mt-2 flex justify-end gap-1.5">
+              <button
+                onClick={handleSaveProfile}
+                disabled={isProfileSaving || !isProfileDirty}
+                className={`rounded px-3 py-1 text-[11px] transition-colors ${
+                  isProfileDirty
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {isProfileSaving ? "..." : "Save"}
+              </button>
+            </div>
           </CardContent>
         </Card>
 
         {/* 링크 관리 카드 */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between py-3">
-            <CardTitle className="text-base">링크 관리</CardTitle>
-            <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
-              링크 추가
-            </Button>
+          <CardHeader className="flex flex-row items-center justify-between py-2 px-4">
+            <CardTitle className="text-sm">링크 관리</CardTitle>
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="rounded bg-primary px-2 py-1 text-[11px] text-white hover:bg-primary/90"
+            >
+              + 추가
+            </button>
           </CardHeader>
-          <CardContent className="py-2">
+          <CardContent className="p-3 pt-0">
             {links.length === 0 ? (
-              <div className="py-6 text-center">
-                <p className="text-gray-600 text-sm">아직 링크가 없습니다</p>
-                <p className="mt-1 text-xs text-gray-500">
-                  "링크 추가" 버튼을 클릭하여 첫 번째 링크를 만들어보세요
+              <div className="py-4 text-center">
+                <p className="text-gray-600 text-xs">아직 링크가 없습니다</p>
+                <p className="mt-1 text-[10px] text-gray-500">
+                  "추가" 버튼을 클릭하여 첫 번째 링크를 만들어보세요
                 </p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-[240px] overflow-y-auto">
+              <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
                 {links.map((link) => (
                   <LinkItem key={link.id} link={link} />
                 ))}
@@ -685,9 +683,9 @@ export default function LinksPage() {
       </div>
 
       {/* 오른쪽: 미리보기 영역 */}
-      <div className="hidden lg:block">
-        <div className="sticky top-6">
-          <h2 className="mb-4 text-center text-sm font-medium text-gray-500">
+      <div className="hidden lg:block flex-shrink-0">
+        <div className="sticky top-4">
+          <h2 className="mb-2 text-center text-xs font-medium text-gray-500">
             미리보기
           </h2>
           <LinkPreview
