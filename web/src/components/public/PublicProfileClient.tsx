@@ -62,7 +62,7 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="pointer-events-auto text-sm font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
+          className="pointer-events-auto text-lg font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
         >
           PPOPLINK
         </a>
