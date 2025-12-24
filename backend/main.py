@@ -124,7 +124,7 @@ def setup_routers(app: FastAPI) -> None:
     # 공개 프로필 페이지 (인증 불필요)
     app.include_router(
         public_router,
-        prefix=f"{settings.API_PREFIX}/u",
+        prefix=f"{settings.API_PREFIX}/public",
         tags=["Public"]
     )
     

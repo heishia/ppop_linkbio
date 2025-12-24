@@ -110,11 +110,8 @@ export default function LinksPage() {
   // 링크 복사 상태
   const [isCopied, setIsCopied] = useState(false);
 
-  // 공개 프로필 URL 생성
-  const publicProfileUrl = useMemo(() => {
-    if (typeof window === "undefined" || !profile?.username) return "";
-    return `${window.location.origin}/${profile.username}`;
-  }, [profile?.username]);
+  // 공개 프로필 URL 상태
+  const [publicProfileUrl, setPublicProfileUrl] = useState("");
 
   // 링크 복사 핸들러
   const handleCopyLink = async () => {
@@ -152,6 +149,13 @@ export default function LinksPage() {
       setOriginalFormData(data);
     }
   }, [profile]);
+
+  // 공개 프로필 URL 설정 (클라이언트에서만)
+  useEffect(() => {
+    if (profile?.username) {
+      setPublicProfileUrl(`${window.location.origin}/${profile.username}`);
+    }
+  }, [profile?.username]);
 
   // dirty state 계산 (프로필 변경사항 있는지)
   const isProfileDirty =
