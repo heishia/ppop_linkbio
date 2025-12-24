@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useLinksStore } from "@/store/linksStore";
 import { useProfileStore } from "@/store/profileStore";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -16,6 +16,7 @@ import {
   SocialPlatformIcon,
   SOCIAL_PLATFORMS,
 } from "@/components/ui/SocialPlatformIcon";
+import { PASTEL_COLORS } from "@/lib/constants/colors";
 
 // 다중 선택 소셜 링크 상태 타입
 interface SelectedPlatform {
@@ -50,8 +51,8 @@ export default function LinksPage() {
   const [editingSocialId, setEditingSocialId] = useState<string | null>(null);
   const [editingUrl, setEditingUrl] = useState("");
 
-  // 저장 중 상태
-  const [isSaving, setIsSaving] = useState(false);
+  // 저장 중 상태 (개별 필드별)
+  const [savingField, setSavingField] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLinks();
@@ -110,30 +111,47 @@ export default function LinksPage() {
     clearError();
   };
 
-  // 통합 저장 - 프로필 정보 + 선택된 소셜 링크 모두 저장
-  const handleSaveAll = async () => {
-    setIsSaving(true);
+  // 개별 프로필 필드 저장 핸들러
+  const handleSaveProfileField = useCallback(async (field: keyof typeof formData) => {
+    if (savingField) return;
+    setSavingField(field);
     try {
-      // 프로필 정보 저장
-      await updateProfile(formData);
-
-      // 선택된 소셜 링크들 추가 (URL이 있는 것만)
-      const validPlatforms = selectedPlatforms.filter(p => p.url.trim());
-      for (const platform of validPlatforms) {
-        await createSocialLink({
-          platform: platform.platform,
-          url: platform.url,
-        });
-      }
-
-      // 선택 초기화
-      setSelectedPlatforms([]);
-      alert("Successfully saved!");
+      await updateProfile({ [field]: formData[field] });
     } catch (error) {
-      console.error("Failed to save:", error);
-      alert("Failed to save. Please try again.");
+      console.error(`Failed to save ${field}:`, error);
     } finally {
-      setIsSaving(false);
+      setSavingField(null);
+    }
+  }, [formData, updateProfile, savingField]);
+
+  // 배경 색상 변경 및 저장
+  const handleBackgroundColorChange = async (color: string) => {
+    setFormData((prev) => ({ ...prev, background_color: color }));
+    setSavingField("background_color");
+    try {
+      await updateProfile({ background_color: color });
+    } catch (error) {
+      console.error("Failed to save background color:", error);
+    } finally {
+      setSavingField(null);
+    }
+  };
+
+  // 소셜 링크 추가 저장 (개별)
+  const handleSaveSocialLink = async (platform: SelectedPlatform) => {
+    if (!platform.url.trim()) return;
+    setSavingField(`social-${platform.platform}`);
+    try {
+      await createSocialLink({
+        platform: platform.platform,
+        url: platform.url,
+      });
+      // 저장 성공 시 해당 플랫폼 선택 목록에서 제거
+      setSelectedPlatforms((prev) => prev.filter((p) => p.platform !== platform.platform));
+    } catch (error) {
+      console.error("Failed to save social link:", error);
+    } finally {
+      setSavingField(null);
     }
   };
 
@@ -160,12 +178,15 @@ export default function LinksPage() {
 
   // 소셜 링크 업데이트 (기존 링크)
   const handleUpdateSocialLink = async (id: string) => {
+    setSavingField(`edit-${id}`);
     try {
       await updateSocialLink(id, { url: editingUrl });
       setEditingSocialId(null);
       setEditingUrl("");
     } catch (error) {
       console.error("Failed to update social link:", error);
+    } finally {
+      setSavingField(null);
     }
   };
 
@@ -194,14 +215,6 @@ export default function LinksPage() {
   const availablePlatforms = SOCIAL_PLATFORMS.filter(
     (p) => !addedPlatforms.includes(p.id)
   );
-
-  // 변경사항이 있는지 확인
-  const hasChanges = 
-    (profile && (
-      formData.display_name !== (profile.display_name || "") ||
-      formData.bio !== (profile.bio || "") ||
-      formData.background_color !== (profile.background_color || "#ffffff")
-    )) || selectedPlatforms.length > 0;
 
   // 미리보기용 소셜 링크 (기존 + 선택 중인 것 합침)
   const previewSocialLinks = [
@@ -245,21 +258,11 @@ export default function LinksPage() {
     <div className="flex gap-6">
       {/* 왼쪽: 설정 영역 */}
       <div className="flex-1 space-y-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">내 페이지 편집</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              프로필과 링크를 한 곳에서 관리하세요
-            </p>
-          </div>
-          <Button
-            variant="primary"
-            onClick={handleSaveAll}
-            disabled={isSaving || !hasChanges}
-            className="px-6"
-          >
-            {isSaving ? "저장 중..." : "전체 저장"}
-          </Button>
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">내 페이지 편집</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            프로필과 링크를 한 곳에서 관리하세요 (Enter 키로 각 항목 저장)
+          </p>
         </div>
 
         {(error || profileError) && (
@@ -281,7 +284,7 @@ export default function LinksPage() {
                   <Avatar
                     src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
                     alt={profile?.username || "User"}
-                    className="h-12 w-12"
+                    size={48}
                   />
                   <Button variant="secondary" className="text-xs">
                     사진 업로드
@@ -297,7 +300,14 @@ export default function LinksPage() {
                       display_name: e.target.value,
                     }))
                   }
-                  placeholder="이름을 입력하세요"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSaveProfileField("display_name");
+                    }
+                  }}
+                  placeholder="이름을 입력하세요 (Enter로 저장)"
+                  disabled={savingField === "display_name"}
                 />
 
                 <Textarea
@@ -306,37 +316,37 @@ export default function LinksPage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, bio: e.target.value }))
                   }
-                  placeholder="자기소개를 작성하세요"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault();
+                      handleSaveProfileField("bio");
+                    }
+                  }}
+                  placeholder="자기소개를 작성하세요 (Ctrl+Enter로 저장)"
                   rows={2}
+                  disabled={savingField === "bio"}
                 />
 
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                    배경 색상
+                    배경 색상 {savingField === "background_color" && <span className="text-xs text-gray-500">(저장 중...)</span>}
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.background_color}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          background_color: e.target.value,
-                        }))
-                      }
-                      className="h-9 w-9 cursor-pointer rounded-lg border border-gray-300"
-                    />
-                    <Input
-                      value={formData.background_color}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          background_color: e.target.value,
-                        }))
-                      }
-                      placeholder="#ffffff"
-                      className="flex-1"
-                    />
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {PASTEL_COLORS.map((color) => (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => handleBackgroundColorChange(color.hex)}
+                        disabled={savingField === "background_color"}
+                        className={`h-8 w-8 rounded-md border-2 transition-all hover:scale-105 ${
+                          formData.background_color.toLowerCase() === color.hex.toLowerCase()
+                            ? "border-primary ring-2 ring-primary/30 scale-110"
+                            : "border-gray-200 hover:border-gray-300"
+                        } ${savingField === "background_color" ? "opacity-50 cursor-not-allowed" : ""}`}
+                        style={{ backgroundColor: color.hex }}
+                        title={color.nameKo}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -374,14 +384,26 @@ export default function LinksPage() {
                                 type="url"
                                 value={editingUrl}
                                 onChange={(e) => setEditingUrl(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleUpdateSocialLink(link.id);
+                                  } else if (e.key === "Escape") {
+                                    setEditingSocialId(null);
+                                    setEditingUrl("");
+                                  }
+                                }}
                                 className="flex-1 rounded border border-gray-300 px-1.5 py-0.5 text-[10px]"
-                                placeholder="https://..."
+                                placeholder="https://... (Enter로 저장)"
+                                disabled={savingField === `edit-${link.id}`}
+                                autoFocus
                               />
                               <button
                                 onClick={() => handleUpdateSocialLink(link.id)}
-                                className="text-[10px] text-blue-600 hover:text-blue-700"
+                                disabled={savingField === `edit-${link.id}`}
+                                className="text-[10px] text-blue-600 hover:text-blue-700 disabled:opacity-50"
                               >
-                                OK
+                                {savingField === `edit-${link.id}` ? "..." : "OK"}
                               </button>
                               <button
                                 onClick={() => {
@@ -469,32 +491,46 @@ export default function LinksPage() {
                 {selectedPlatforms.length > 0 && (
                   <div className="space-y-1.5 p-2 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-xs font-medium text-blue-700">
-                      URL 입력 ({selectedPlatforms.length}개 선택됨)
+                      URL 입력 후 Enter로 저장 ({selectedPlatforms.length}개 선택됨)
                     </p>
-                    {selectedPlatforms.map((selected) => (
-                      <div key={selected.platform} className="flex items-center gap-1.5">
-                        <SocialPlatformIcon
-                          platform={selected.platform}
-                          size="sm"
-                          showBackground
-                        />
-                        <input
-                          type="url"
-                          value={selected.url}
-                          onChange={(e) =>
-                            handleUpdateSelectedUrl(selected.platform, e.target.value)
-                          }
-                          placeholder={`https://${selected.platform}.com/username`}
-                          className="flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
-                        />
-                        <button
-                          onClick={() => handleTogglePlatform(selected.platform)}
-                          className="text-xs text-red-500 hover:text-red-700"
-                        >
-                          X
-                        </button>
-                      </div>
-                    ))}
+                    {selectedPlatforms.map((selected) => {
+                      const isSavingThis = savingField === `social-${selected.platform}`;
+                      return (
+                        <div key={selected.platform} className="flex items-center gap-1.5">
+                          <SocialPlatformIcon
+                            platform={selected.platform}
+                            size="sm"
+                            showBackground
+                          />
+                          <input
+                            type="url"
+                            value={selected.url}
+                            onChange={(e) =>
+                              handleUpdateSelectedUrl(selected.platform, e.target.value)
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleSaveSocialLink(selected);
+                              }
+                            }}
+                            placeholder={`https://${selected.platform}.com/username (Enter로 저장)`}
+                            className="flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-xs focus:border-blue-500 focus:outline-none disabled:opacity-50"
+                            disabled={isSavingThis}
+                          />
+                          {isSavingThis ? (
+                            <span className="text-xs text-blue-500">저장중...</span>
+                          ) : (
+                            <button
+                              onClick={() => handleTogglePlatform(selected.platform)}
+                              className="text-xs text-red-500 hover:text-red-700"
+                            >
+                              X
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

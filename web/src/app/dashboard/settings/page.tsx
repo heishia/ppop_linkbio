@@ -100,7 +100,7 @@ export default function SettingsPage() {
           <Avatar
             src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
             alt={profile?.display_name || profile?.username || "Profile"}
-            className="h-20 w-20"
+            size={80}
           />
           <div>
             <label className="cursor-pointer">
@@ -160,18 +160,6 @@ export default function SettingsPage() {
         <p className="mb-4 text-sm text-gray-600">
           Choose a pastel background color for your profile page
         </p>
-        
-        {/* 현재 선택된 색상 미리보기 */}
-        <div className="mb-6 flex items-center gap-4">
-          <div
-            className="h-16 w-24 rounded-lg border border-gray-200 shadow-inner"
-            style={{ backgroundColor: backgroundColor }}
-          />
-          <div>
-            <p className="text-sm font-medium text-gray-700">Current Color</p>
-            <p className="text-xs text-gray-500 uppercase">{backgroundColor}</p>
-          </div>
-        </div>
 
         {/* 컬러 팔레트 */}
         <ColorPicker
