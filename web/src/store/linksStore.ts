@@ -17,6 +17,12 @@ interface LinksState {
   ) => Promise<void>;
   deleteLink: (linkId: string) => Promise<void>;
   reorderLinks: (linkIds: string[]) => Promise<void>;
+  createSocialLink: (data: { platform: string; url: string }) => Promise<void>;
+  updateSocialLink: (
+    socialLinkId: string,
+    data: { url?: string; is_active?: boolean }
+  ) => Promise<void>;
+  deleteSocialLink: (socialLinkId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -102,6 +108,53 @@ export const useLinksStore = create<LinksState>((set, get) => ({
     } catch (error: any) {
       set({
         error: error.response?.data?.detail || "Failed to reorder links",
+      });
+      throw error;
+    }
+  },
+
+  createSocialLink: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await linksApi.createSocialLink(data);
+      set((state) => ({
+        socialLinks: [...state.socialLinks, response.data],
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        error: error.response?.data?.detail || "Failed to create social link",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  updateSocialLink: async (socialLinkId, data) => {
+    try {
+      const response = await linksApi.updateSocialLink(socialLinkId, data);
+      set((state) => ({
+        socialLinks: state.socialLinks.map((link) =>
+          link.id === socialLinkId ? response.data : link
+        ),
+      }));
+    } catch (error: any) {
+      set({
+        error: error.response?.data?.detail || "Failed to update social link",
+      });
+      throw error;
+    }
+  },
+
+  deleteSocialLink: async (socialLinkId) => {
+    try {
+      await linksApi.deleteSocialLink(socialLinkId);
+      set((state) => ({
+        socialLinks: state.socialLinks.filter((link) => link.id !== socialLinkId),
+      }));
+    } catch (error: any) {
+      set({
+        error: error.response?.data?.detail || "Failed to delete social link",
       });
       throw error;
     }

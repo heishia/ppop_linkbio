@@ -25,13 +25,13 @@ export function LoginForm() {
     const errors: { email?: string; password?: string } = {};
 
     if (!formData.email) {
-      errors.email = "Email is required";
+      errors.email = "이메일을 입력해주세요";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email is invalid";
+      errors.email = "올바른 이메일 형식이 아닙니다";
     }
 
     if (!formData.password) {
-      errors.password = "Password is required";
+      errors.password = "비밀번호를 입력해주세요";
     }
 
     setFormErrors(errors);
@@ -55,6 +55,20 @@ export function LoginForm() {
     }
   };
 
+  const handleDevLogin = async () => {
+    clearError();
+    setFormData({
+      email: "test@example.com",
+      password: "Test1234!",
+    });
+    try {
+      await login({ email: "test@example.com", password: "Test1234!" });
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Dev login failed:", error);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -73,7 +87,7 @@ export function LoginForm() {
       )}
 
       <Input
-        label="Email"
+        label="이메일"
         type="email"
         name="email"
         value={formData.email}
@@ -85,13 +99,13 @@ export function LoginForm() {
       />
 
       <Input
-        label="Password"
+        label="비밀번호"
         type="password"
         name="password"
         value={formData.password}
         onChange={handleChange}
         error={formErrors.password}
-        placeholder="Enter your password"
+        placeholder="비밀번호를 입력하세요"
         disabled={isLoading}
         autoComplete="current-password"
       />
@@ -102,16 +116,28 @@ export function LoginForm() {
         disabled={isLoading}
         className="w-full"
       >
-        {isLoading ? "Logging in..." : "Log In"}
+        {isLoading ? "로그인 중..." : "로그인"}
+      </Button>
+
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={handleDevLogin}
+        disabled={isLoading}
+        className="w-full"
+      >
+        개발자 로그인 (test@example.com)
       </Button>
 
       <p className="text-center text-sm text-gray-600">
-        Don't have an account?{" "}
-        <Link href="/register" className="font-semibold text-primary hover:underline">
-          Sign up
+        계정이 없으신가요?{" "}
+        <Link
+          href="/register"
+          className="font-semibold text-primary hover:underline"
+        >
+          회원가입
         </Link>
       </p>
     </form>
   );
 }
-

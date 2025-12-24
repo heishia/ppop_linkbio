@@ -10,10 +10,10 @@ export default function RegisterPage() {
             PPOP LinkBio
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-gray-900">
-            Create your account
+            계정 만들기
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Start sharing your links in one place
+            링크를 한 곳에서 공유해보세요
           </p>
         </div>
 
@@ -24,4 +24,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

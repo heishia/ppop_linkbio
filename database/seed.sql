@@ -2,13 +2,12 @@
 -- 테스트용 초기 데이터
 
 -- 관리자 계정 (비밀번호: Admin123!)
--- 실제 사용시 password_hash 값을 bcrypt로 생성된 값으로 교체해야 함
 INSERT INTO users (id, username, email, password_hash, display_name, is_admin, is_active)
 VALUES (
     'a0000000-0000-0000-0000-000000000001',
     'admin',
     'admin@ppop.link',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiAYOv.cG5O6',
+    '$2b$12$etZp1hYuN5HJbwodDtv0duW8KcBw2n/JW2OpmIJ.mooM97dKAzOV.',
     'Administrator',
     TRUE,
     TRUE
@@ -24,7 +23,7 @@ VALUES (
     'b0000000-0000-0000-0000-000000000001',
     'testuser',
     'test@example.com',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiAYOv.cG5O6',
+    '$2b$12$biS11n.hLJ1NxTX8GJIOHefRvg.frB6s847p..Wy7ObxERWuZjkei',
     'Test User',
     'Hello! This is my link page.',
     'default',

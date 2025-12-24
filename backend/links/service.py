@@ -74,18 +74,29 @@ class LinkService:
         await self._verify_link_ownership(user_id, link_id)
         
         update_data = request.model_dump(exclude_unset=True)
+        logger.info(f"Update request data: {update_data}")
+        
         if not update_data:
             link = await self._get_link_by_id(link_id)
             return link
         
         update_data["updated_at"] = datetime.utcnow().isoformat()
         
-        result = db.table(self.TABLE_LINKS).update(update_data).eq(
+        # 업데이트 전 현재 값 확인
+        before = await self._get_link_by_id(link_id)
+        logger.info(f"Before update - is_active: {before.is_active}")
+        
+        # 업데이트 실행
+        db.table(self.TABLE_LINKS).update(update_data).eq(
             "id", str(link_id)
         ).execute()
         
         logger.info(f"Link updated: link_id={link_id}")
-        return self._map_to_link(result.data[0])
+        
+        # 업데이트된 데이터 조회 후 반환
+        after = await self._get_link_by_id(link_id)
+        logger.info(f"After update - is_active: {after.is_active}")
+        return after
     
     async def delete_link(self, user_id: UUID, link_id: UUID) -> None:
         await self._verify_link_ownership(user_id, link_id)
@@ -166,12 +177,15 @@ class LinkService:
         
         update_data["updated_at"] = datetime.utcnow().isoformat()
         
-        result = db.table(self.TABLE_SOCIAL_LINKS).update(update_data).eq(
+        # 업데이트 실행
+        db.table(self.TABLE_SOCIAL_LINKS).update(update_data).eq(
             "id", str(social_link_id)
         ).execute()
         
         logger.info(f"Social link updated: social_link_id={social_link_id}")
-        return self._map_to_social_link(result.data[0])
+        
+        # 업데이트된 데이터 조회 후 반환
+        return await self._get_social_link_by_id(social_link_id)
     
     async def delete_social_link(self, user_id: UUID, social_link_id: UUID) -> None:
         await self._verify_social_link_ownership(user_id, social_link_id)

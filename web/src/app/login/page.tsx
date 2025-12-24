@@ -10,10 +10,10 @@ export default function LoginPage() {
             PPOP LinkBio
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-gray-900">
-            Welcome back
+            다시 오신 것을 환영합니다
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            link in bio
+            링크를 한 곳에 모아보세요
           </p>
         </div>
 

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # App Configuration
     APP_ENV: Literal["dev", "prod"] = "dev"
     APP_NAME: str = "PPOP LinkBio"
-    APP_PORT: int = 8000
+    APP_PORT: int = 8005
     
     # Supabase
     SUPABASE_URL: str
@@ -28,9 +28,9 @@ class Settings(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Server
-    DEBUG: bool = False
+    DEBUG: bool = True  # 개발 환경에서는 기본값을 True로 설정
     API_PREFIX: str = "/api"
-    CORS_ORIGINS: str = "http://localhost:3000"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005"
     
     # Storage
     STORAGE_BUCKET_PROFILES: str = "profiles"
@@ -72,7 +72,27 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    try:
+        return Settings()
+    except Exception as e:
+        import sys
+        print("=" * 60)
+        print("ERROR: Failed to load settings")
+        print("=" * 60)
+        print(f"Error: {e}")
+        print()
+        print("Required environment variables:")
+        print("  - SUPABASE_URL")
+        print("  - SUPABASE_KEY")
+        print("  - JWT_SECRET_KEY")
+        print()
+        print("Please create a .env.dev file in the project root with these variables.")
+        print("Example:")
+        print("  SUPABASE_URL=https://your-project.supabase.co")
+        print("  SUPABASE_KEY=your-anon-key")
+        print("  JWT_SECRET_KEY=your-secret-key")
+        print("=" * 60)
+        sys.exit(1)
 
 
 settings = get_settings()

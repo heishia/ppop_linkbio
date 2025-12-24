@@ -35,27 +35,27 @@ export function RegisterForm() {
     } = {};
 
     if (!formData.username) {
-      errors.username = "Username is required";
+      errors.username = "사용자명을 입력해주세요";
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      errors.username = "Username can only contain letters, numbers, and underscores";
+      errors.username = "영문, 숫자, 언더스코어만 사용 가능합니다";
     } else if (formData.username.length < 3) {
-      errors.username = "Username must be at least 3 characters";
+      errors.username = "최소 3자 이상 입력해주세요";
     }
 
     if (!formData.email) {
-      errors.email = "Email is required";
+      errors.email = "이메일을 입력해주세요";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email is invalid";
+      errors.email = "올바른 이메일 형식이 아닙니다";
     }
 
     if (!formData.password) {
-      errors.password = "Password is required";
+      errors.password = "비밀번호를 입력해주세요";
     } else if (formData.password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+      errors.password = "최소 8자 이상 입력해주세요";
     }
 
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = "비밀번호가 일치하지 않습니다";
     }
 
     setFormErrors(errors);
@@ -102,7 +102,7 @@ export function RegisterForm() {
       )}
 
       <Input
-        label="Username"
+        label="사용자명"
         type="text"
         name="username"
         value={formData.username}
@@ -114,7 +114,7 @@ export function RegisterForm() {
       />
 
       <Input
-        label="Display Name (Optional)"
+        label="표시 이름 (선택사항)"
         type="text"
         name="display_name"
         value={formData.display_name}
@@ -125,7 +125,7 @@ export function RegisterForm() {
       />
 
       <Input
-        label="Email"
+        label="이메일"
         type="email"
         name="email"
         value={formData.email}
@@ -137,25 +137,25 @@ export function RegisterForm() {
       />
 
       <Input
-        label="Password"
+        label="비밀번호"
         type="password"
         name="password"
         value={formData.password}
         onChange={handleChange}
         error={formErrors.password}
-        placeholder="At least 8 characters"
+        placeholder="최소 8자 이상"
         disabled={isLoading}
         autoComplete="new-password"
       />
 
       <Input
-        label="Confirm Password"
+        label="비밀번호 확인"
         type="password"
         name="confirmPassword"
         value={formData.confirmPassword}
         onChange={handleChange}
         error={formErrors.confirmPassword}
-        placeholder="Re-enter your password"
+        placeholder="비밀번호를 다시 입력하세요"
         disabled={isLoading}
         autoComplete="new-password"
       />
@@ -166,16 +166,15 @@ export function RegisterForm() {
         disabled={isLoading}
         className="w-full"
       >
-        {isLoading ? "Creating account..." : "Create Account"}
+        {isLoading ? "계정 생성 중..." : "계정 만들기"}
       </Button>
 
       <p className="text-center text-sm text-gray-600">
-        Already have an account?{" "}
+        이미 계정이 있으신가요?{" "}
         <Link href="/login" className="font-semibold text-primary hover:underline">
-          Log in
+          로그인
         </Link>
       </p>
     </form>
   );
 }
-

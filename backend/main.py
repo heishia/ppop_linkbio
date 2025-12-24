@@ -21,21 +21,32 @@ from backend.admin.router import router as admin_router
 
 
 def create_app() -> FastAPI:
-    # Initialize Sentry
-    init_sentry()
-    app = FastAPI(
-        title="PPOP LinkBio API",
-        description="Link in bio SaaS service API",
-        version="0.1.0",
-        docs_url=f"{settings.API_PREFIX}/docs" if settings.DEBUG else None,
-        redoc_url=f"{settings.API_PREFIX}/redoc" if settings.DEBUG else None,
-    )
-    
-    setup_middlewares(app)
-    setup_exception_handlers(app)
-    setup_routers(app)
-    
-    return app
+    try:
+        logger.info("Creating FastAPI application...")
+        # Initialize Sentry
+        init_sentry()
+        app = FastAPI(
+            title="PPOP LinkBio API",
+            description="Link in bio SaaS service API",
+            version="0.1.0",
+            docs_url=f"{settings.API_PREFIX}/docs" if settings.DEBUG else None,
+            redoc_url=f"{settings.API_PREFIX}/redoc" if settings.DEBUG else None,
+        )
+        
+        logger.info("Setting up middlewares...")
+        setup_middlewares(app)
+        
+        logger.info("Setting up exception handlers...")
+        setup_exception_handlers(app)
+        
+        logger.info("Setting up routers...")
+        setup_routers(app)
+        
+        logger.info("FastAPI application created successfully")
+        return app
+    except Exception as e:
+        logger.error(f"Failed to create FastAPI application: {e}", exc_info=True)
+        raise
 
 
 def setup_middlewares(app: FastAPI) -> None:
@@ -78,12 +89,15 @@ def setup_exception_handlers(app: FastAPI) -> None:
 
 
 def setup_routers(app: FastAPI) -> None:
+    logger.info(f"Setting up routers with API_PREFIX: {settings.API_PREFIX}")
+    
     # 인증
     app.include_router(
         auth_router,
         prefix=f"{settings.API_PREFIX}/auth",
         tags=["Auth"]
     )
+    logger.info(f"Auth router registered at {settings.API_PREFIX}/auth")
     
     # 프로필 (로그인 필요)
     app.include_router(
@@ -123,6 +137,16 @@ def setup_routers(app: FastAPI) -> None:
     @app.get("/health")
     async def health_check():
         return {"status": "ok"}
+    
+    @app.get("/")
+    async def root():
+        return {
+            "message": "PPOP LinkBio API",
+            "version": "0.1.0",
+            "docs": f"{settings.API_PREFIX}/docs" if settings.DEBUG else None
+        }
+    
+    logger.info("Routers setup complete")
 
 
 app = create_app()

@@ -42,7 +42,7 @@ export function LinkItem({ link }: LinkItemProps) {
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this link?")) {
+    if (confirm("이 링크를 삭제하시겠습니까?")) {
       try {
         await deleteLink(link.id);
       } catch (error) {
@@ -56,7 +56,7 @@ export function LinkItem({ link }: LinkItemProps) {
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <div className="space-y-3">
           <Input
-            label="Title"
+            label="제목"
             value={editData.title}
             onChange={(e) =>
               setEditData((prev) => ({ ...prev, title: e.target.value }))
@@ -73,14 +73,14 @@ export function LinkItem({ link }: LinkItemProps) {
           />
           <div className="flex gap-2">
             <Button variant="primary" onClick={handleSave} className="flex-1">
-              Save
+              저장
             </Button>
             <Button
               variant="secondary"
               onClick={handleCancel}
               className="flex-1"
             >
-              Cancel
+              취소
             </Button>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function LinkItem({ link }: LinkItemProps) {
         <h3 className="font-semibold text-gray-900">{link.title}</h3>
         <p className="text-sm text-gray-500 truncate">{link.url}</p>
         <p className="text-xs text-gray-400 mt-1">
-          {link.click_count} clicks
+          클릭 {link.click_count}회
         </p>
       </div>
 
@@ -159,4 +159,3 @@ export function LinkItem({ link }: LinkItemProps) {
     </div>
   );
 }
-

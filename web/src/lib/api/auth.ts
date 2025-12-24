@@ -47,7 +47,10 @@ export const authApi = {
   },
 
   login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>("/api/auth/login", data);
+    const response = await apiClient.post<AuthResponse>(
+      "/api/auth/login",
+      data
+    );
     return response.data;
   },
 
@@ -69,4 +72,3 @@ export const authApi = {
     return response.data;
   },
 };
-

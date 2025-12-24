@@ -16,7 +16,10 @@ const config: Config = {
         tertiary: "rgba(0, 0, 0, 0.12)",
       },
       fontFamily: {
-        nunito: ["var(--font-nunito)", "sans-serif"],
+        "cafe-surround": ["Cafe24 Ssurround", "sans-serif"],
+        "iseoyun": ["Iseoyun", "var(--font-iseoyun)", "sans-serif"],
+        sans: ["Iseoyun", "var(--font-iseoyun)", "sans-serif"],
+        heading: ["Cafe24 Ssurround", "sans-serif"],
       },
       fontSize: {
         "username": ["22px", { lineHeight: "28.6px", fontWeight: "800" }],

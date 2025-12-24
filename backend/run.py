@@ -19,12 +19,35 @@ from backend.core.config import settings
 
 
 def run_server() -> None:
-    uvicorn.run(
-        "backend.main:app",
-        host="0.0.0.0",
-        port=settings.APP_PORT,
-        reload=settings.DEBUG
-    )
+    try:
+        print(f"Starting backend server on port {settings.APP_PORT}...")
+        print(f"DEBUG mode: {settings.DEBUG}")
+        print(f"API prefix: {settings.API_PREFIX}")
+        print(f"Access API docs at: http://localhost:{settings.APP_PORT}{settings.API_PREFIX}/docs")
+        print("-" * 60)
+        
+        # Test if we can import the app before starting
+        try:
+            from backend.main import app
+            print("[OK] Backend app imported successfully")
+        except Exception as e:
+            print(f"[ERROR] Failed to import backend app: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        uvicorn.run(
+            "backend.main:app",
+            host="0.0.0.0",
+            port=settings.APP_PORT,
+            reload=settings.DEBUG,
+            log_level="info" if settings.DEBUG else "warning"
+        )
+    except Exception as e:
+        print(f"[ERROR] Failed to start backend server: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 if __name__ == "__main__":

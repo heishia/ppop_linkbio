@@ -26,15 +26,15 @@ export default function LinksPage() {
     const errors: { title?: string; url?: string } = {};
 
     if (!newLink.title.trim()) {
-      errors.title = "Title is required";
+      errors.title = "제목을 입력해주세요";
     }
 
     if (!newLink.url.trim()) {
-      errors.url = "URL is required";
+      errors.url = "URL을 입력해주세요";
     } else if (
       !/^https?:\/\/.+/.test(newLink.url)
     ) {
-      errors.url = "URL must start with http:// or https://";
+      errors.url = "URL은 http:// 또는 https://로 시작해야 합니다";
     }
 
     setFormErrors(errors);
@@ -75,13 +75,13 @@ export default function LinksPage() {
     <div className="mx-auto max-w-4xl">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Links</h1>
+          <h1 className="text-2xl font-bold text-gray-900">링크</h1>
           <p className="mt-1 text-sm text-gray-600">
-            link in bio
+            링크를 관리하세요
           </p>
         </div>
         <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-          Add Link
+          링크 추가
         </Button>
       </div>
 
@@ -95,9 +95,9 @@ export default function LinksPage() {
         <CardContent>
           {links.length === 0 ? (
             <div className="py-12 text-center">
-              <p className="text-gray-600">No links yet</p>
+              <p className="text-gray-600">아직 링크가 없습니다</p>
               <p className="mt-2 text-sm text-gray-500">
-                Click "Add Link" to create your first link
+                "링크 추가" 버튼을 클릭하여 첫 번째 링크를 만들어보세요
               </p>
             </div>
           ) : (
@@ -113,11 +113,11 @@ export default function LinksPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title="Add New Link"
+        title="새 링크 추가"
       >
         <div className="space-y-4">
           <Input
-            label="Title"
+            label="제목"
             value={newLink.title}
             onChange={(e) =>
               setNewLink((prev) => ({ ...prev, title: e.target.value }))
@@ -141,14 +141,14 @@ export default function LinksPage() {
               disabled={isLoading}
               className="flex-1"
             >
-              {isLoading ? "Creating..." : "Create Link"}
+              {isLoading ? "생성 중..." : "링크 만들기"}
             </Button>
             <Button
               variant="secondary"
               onClick={handleCloseModal}
               className="flex-1"
             >
-              Cancel
+              취소
             </Button>
           </div>
         </div>

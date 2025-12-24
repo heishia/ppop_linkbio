@@ -51,7 +51,7 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
         {/* Footer */}
         <footer className="mt-8 text-center text-sm text-gray-500">
           <p>
-            Create your own link in bio with{" "}
+            PPOP LinkBio로 나만의 링크 바이오를 만들어보세요{" "}
             <a
               href="/"
               className="font-semibold text-primary hover:underline"
@@ -66,4 +66,3 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
     </main>
   );
 }
-

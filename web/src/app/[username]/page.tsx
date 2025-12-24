@@ -46,8 +46,7 @@ export async function generateMetadata({ params }: PageProps) {
     };
   } catch (error) {
     return {
-      title: "Profile Not Found | PPOP LinkBio",
+      title: "profile not found | PPOP LinkBio",
     };
   }
 }
-

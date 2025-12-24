@@ -7,18 +7,17 @@ export default function NotFound() {
       <div className="text-center">
         <h1 className="text-6xl font-extrabold text-gray-900">404</h1>
         <h2 className="mt-4 text-2xl font-bold text-gray-700">
-          Profile Not Found
+          프로필을 찾을 수 없습니다
         </h2>
         <p className="mt-2 text-gray-600">
-          The profile you're looking for doesn't exist.
+          찾고 계신 프로필이 존재하지 않습니다.
         </p>
         <div className="mt-8">
           <Link href="/">
-            <Button variant="primary">Go Home</Button>
+            <Button variant="primary">홈으로 가기</Button>
           </Link>
         </div>
       </div>
     </div>
   );
 }
-

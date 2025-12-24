@@ -2,18 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Iseoyun";
+  src: url("/fonts/iseoyun.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #000000;
   --primary: #3a63ed;
   --secondary: rgba(0, 0, 0, 0.04);
   --tertiary: rgba(0, 0, 0, 0.12);
+  --font-iseoyun: "Iseoyun", sans-serif;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-nunito), sans-serif;
+  font-family: var(--font-iseoyun), sans-serif;
+}
+
+/* 큰 글씨 - 카페 써라운드 (제목과 그 안의 모든 요소) */
+h1,
+h1 *,
+h2,
+h2 *,
+h3,
+h3 *,
+h4,
+h4 *,
+h5,
+h5 *,
+h6,
+h6 *,
+.font-heading,
+.font-heading * {
+  font-family: "Cafe24 Ssurround", sans-serif !important;
+}
+
+/* 작은 글씨 - 이서윤체 (본문, 버튼 등) */
+body {
+  font-family: var(--font-iseoyun), sans-serif;
+}
+
+p,
+button,
+input,
+textarea,
+label {
+  font-family: var(--font-iseoyun), sans-serif;
 }
 
 @layer utilities {

@@ -24,7 +24,7 @@ export function Header() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
       <div>
-        <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+        <h1 className="text-lg font-semibold text-gray-900">대시보드</h1>
       </div>
 
       <div className="flex items-center gap-4">
@@ -33,7 +33,7 @@ export function Header() {
           onClick={handleViewProfile}
           className="text-sm"
         >
-          Share Profile
+          프로필 공유
         </Button>
 
         <div className="flex items-center gap-3">
@@ -55,10 +55,9 @@ export function Header() {
           onClick={handleLogout}
           className="text-sm"
         >
-          Logout
+          로그아웃
         </Button>
       </div>
     </header>
   );
 }
-

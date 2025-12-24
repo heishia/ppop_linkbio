@@ -7,17 +7,17 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   {
-    name: "Links",
+    name: "링크",
     href: "/dashboard/links",
     icon: "link",
   },
   {
-    name: "Appearance",
+    name: "외관",
     href: "/dashboard/appearance",
     icon: "palette",
   },
   {
-    name: "Settings",
+    name: "설정",
     href: "/dashboard/settings",
     icon: "settings",
   },
@@ -60,7 +60,7 @@ export function Sidebar() {
           href="/dashboard"
           className="block rounded-lg bg-gray-100 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
         >
-          View Profile
+          프로필 보기
         </Link>
       </div>
     </aside>

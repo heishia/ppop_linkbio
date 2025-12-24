@@ -2,7 +2,7 @@ import axios from "axios";
 import { apiClient } from "./client";
 import { Link, SocialLink } from "./links";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8005";
 
 export interface PublicProfile {
   username: string;
