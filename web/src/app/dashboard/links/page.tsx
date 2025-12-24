@@ -150,12 +150,14 @@ export default function LinksPage() {
     }
   }, [profile]);
 
-  // 공개 프로필 URL 설정 (클라이언트에서만)
+  // 공개 프로필 URL 설정 (클라이언트에서만, public_link_id 기반)
   useEffect(() => {
-    if (profile?.username) {
-      setPublicProfileUrl(`${window.location.origin}/${profile.username}`);
+    if (profile?.public_link_id) {
+      setPublicProfileUrl(
+        `${window.location.origin}/${profile.public_link_id}`
+      );
     }
-  }, [profile?.username]);
+  }, [profile?.public_link_id]);
 
   // dirty state 계산 (프로필 변경사항 있는지)
   const isProfileDirty =

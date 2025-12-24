@@ -1,8 +1,24 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Link2, Sparkles, BarChart3 } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Home() {
+  const { isAuthenticated, checkAuth } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const init = async () => {
+      await checkAuth();
+      setIsLoading(false);
+    };
+    init();
+  }, [checkAuth]);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
@@ -19,16 +35,31 @@ export default function Home() {
             간단하고 예쁜 링크바이오 뽑링크
           </p>
           <div className="mt-8 sm:mt-10 flex flex-col items-center gap-3 sm:gap-4 sm:flex-row sm:justify-center">
-            <Link href="/register">
-              <Button variant="primary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
-                무료로 시작하기
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="secondary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
-                로그인
-              </Button>
-            </Link>
+            {isLoading ? (
+              // 로딩 중에는 버튼 숨김 (깜빡임 방지)
+              <div className="h-10 sm:h-12" />
+            ) : isAuthenticated ? (
+              // 로그인 상태: 대시보드 버튼 표시
+              <Link href="/dashboard/links">
+                <Button variant="primary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                  대시보드로 이동
+                </Button>
+              </Link>
+            ) : (
+              // 비로그인 상태: 가입 + 로그인 버튼 표시
+              <>
+                <Link href="/register">
+                  <Button variant="primary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                    무료로 시작하기
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button variant="secondary" className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                    로그인
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -88,11 +119,19 @@ export default function Home() {
             <span className="block mt-1 sm:mt-2 text-yellow-300">무료!</span>
           </h2>
           <div className="mt-6 sm:mt-10 flex justify-center">
-            <Link href="/register">
-              <Button variant="secondary" className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
-                지금 바로 시작하기
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/dashboard/links">
+                <Button variant="secondary" className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
+                  대시보드로 이동
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/register">
+                <Button variant="secondary" className="w-auto px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
+                  지금 바로 시작하기
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -107,11 +146,19 @@ export default function Home() {
             수천 명의 크리에이터들과 함께 콘텐츠를 공유하세요.
           </p>
           <div className="mt-6 sm:mt-8 flex justify-center">
-            <Link href="/register">
-              <Button variant="primary" className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
-                링크 바이오 만들기
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/dashboard/links">
+                <Button variant="primary" className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                  대시보드로 이동
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/register">
+                <Button variant="primary" className="w-auto px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base">
+                  링크 바이오 만들기
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -120,7 +167,7 @@ export default function Home() {
       <footer className="border-t border-gray-200 bg-white px-4 py-8 sm:py-12">
         <div className="mx-auto max-w-6xl text-center">
           <p className="text-xs sm:text-sm text-gray-600">
-            © 2025 PPOPLINK. All rights reserved.
+            2025 PPOPLINK. All rights reserved.
           </p>
         </div>
       </footer>
