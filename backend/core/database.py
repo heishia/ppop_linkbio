@@ -36,6 +36,9 @@ def get_supabase_admin_client() -> Client:
     if _supabase_admin_client is None:
         # 서비스 롤 키가 있으면 사용, 없으면 anon key 사용
         key = settings.SUPABASE_SERVICE_KEY if settings.SUPABASE_SERVICE_KEY else settings.SUPABASE_KEY
+        # #region agent log
+        import json, time; open(r"c:\Dev\ppop_linkbio\.cursor\debug.log", "a", encoding="utf-8").write(json.dumps({"location": "database.py:39", "message": "Admin client init", "data": {"has_service_key": bool(settings.SUPABASE_SERVICE_KEY), "supabase_url": settings.SUPABASE_URL, "key_prefix": key[:20] + "..." if key else "None"}, "timestamp": time.time()*1000, "sessionId": "debug-session", "hypothesisId": "A"}) + "\n")
+        # #endregion
         _supabase_admin_client = create_client(
             settings.SUPABASE_URL,
             key

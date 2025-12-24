@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useLinksStore } from "@/store/linksStore";
 import { useProfileStore } from "@/store/profileStore";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -21,6 +21,9 @@ import { PASTEL_COLORS } from "@/lib/constants/colors";
 // SNS 아이콘 최대 개수 제한
 const MAX_SOCIAL_ICONS = 5;
 
+// 링크 최대 개수 제한
+const MAX_LINKS = 6;
+
 // 다중 선택 소셜 링크 상태 타입
 interface SelectedPlatform {
   platform: string;
@@ -28,13 +31,32 @@ interface SelectedPlatform {
 }
 
 export default function LinksPage() {
-  const { links, socialLinks, isLoading, error, fetchLinks, fetchSocialLinks, createLink, clearError, createSocialLink, updateSocialLink, deleteSocialLink } =
-    useLinksStore();
-  const { profile, isLoading: profileLoading, error: profileError, fetchProfile, updateProfile, uploadProfileImage, clearError: clearProfileError } = useProfileStore();
-  
+  const {
+    links,
+    socialLinks,
+    isLoading,
+    error,
+    fetchLinks,
+    fetchSocialLinks,
+    createLink,
+    clearError,
+    createSocialLink,
+    updateSocialLink,
+    deleteSocialLink,
+  } = useLinksStore();
+  const {
+    profile,
+    isLoading: profileLoading,
+    error: profileError,
+    fetchProfile,
+    updateProfile,
+    uploadProfileImage,
+    clearError: clearProfileError,
+  } = useProfileStore();
+
   // 프로필 이미지 업로드를 위한 ref
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // 링크 추가 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLink, setNewLink] = useState({ title: "", url: "" });
@@ -49,14 +71,14 @@ export default function LinksPage() {
     bio: "",
     background_color: "#ffffff",
   });
-  
+
   // 원본 프로필 데이터 (dirty state 비교용)
   const [originalFormData, setOriginalFormData] = useState({
     display_name: "",
     bio: "",
     background_color: "#ffffff",
   });
-  
+
   // 프로필 저장 관련 상태
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [profileSaveMessage, setProfileSaveMessage] = useState<{
@@ -65,8 +87,10 @@ export default function LinksPage() {
   } | null>(null);
 
   // 다중 선택된 플랫폼 상태
-  const [selectedPlatforms, setSelectedPlatforms] = useState<SelectedPlatform[]>([]);
-  
+  const [selectedPlatforms, setSelectedPlatforms] = useState<
+    SelectedPlatform[]
+  >([]);
+
   // 편집 중인 소셜 링크 상태
   const [editingSocialId, setEditingSocialId] = useState<string | null>(null);
   const [editingUrl, setEditingUrl] = useState("");
@@ -91,9 +115,9 @@ export default function LinksPage() {
       setOriginalFormData(data);
     }
   }, [profile]);
-  
+
   // dirty state 계산 (프로필 변경사항 있는지)
-  const isProfileDirty = 
+  const isProfileDirty =
     formData.display_name !== originalFormData.display_name ||
     formData.bio !== originalFormData.bio ||
     formData.background_color !== originalFormData.background_color;
@@ -107,9 +131,7 @@ export default function LinksPage() {
 
     if (!newLink.url.trim()) {
       errors.url = "URL을 입력해주세요";
-    } else if (
-      !/^https?:\/\/.+/.test(newLink.url)
-    ) {
+    } else if (!/^https?:\/\/.+/.test(newLink.url)) {
       errors.url = "URL은 http:// 또는 https://로 시작해야 합니다";
     }
 
@@ -143,42 +165,42 @@ export default function LinksPage() {
   const handleBackgroundColorChange = (color: string) => {
     setFormData((prev) => ({ ...prev, background_color: color }));
   };
-  
+
   // 프로필 저장 핸들러 (모든 필드 한번에 저장)
   const handleSaveProfile = async () => {
     if (isProfileSaving || !isProfileDirty) return;
-    
+
     setIsProfileSaving(true);
     setProfileSaveMessage(null);
     clearProfileError();
-    
+
     try {
       await updateProfile({
         display_name: formData.display_name || undefined,
         bio: formData.bio || undefined,
         background_color: formData.background_color,
       });
-      
+
       // 저장 성공 시 원본 데이터 업데이트
       setOriginalFormData({ ...formData });
-      setProfileSaveMessage({ type: "success", text: "Profile saved successfully!" });
-      
+      setProfileSaveMessage({
+        type: "success",
+        text: "Profile saved successfully!",
+      });
+
       // 3초 후 메시지 숨기기
       setTimeout(() => {
         setProfileSaveMessage(null);
       }, 3000);
     } catch (error) {
       console.error("Failed to save profile:", error);
-      setProfileSaveMessage({ type: "error", text: "Failed to save profile. Please try again." });
+      setProfileSaveMessage({
+        type: "error",
+        text: "Failed to save profile. Please try again.",
+      });
     } finally {
       setIsProfileSaving(false);
     }
-  };
-  
-  // 프로필 변경사항 취소 (원본 데이터로 복원)
-  const handleCancelProfileChanges = () => {
-    setFormData({ ...originalFormData });
-    setProfileSaveMessage(null);
   };
 
   // 소셜 링크 추가 저장 (개별)
@@ -191,7 +213,9 @@ export default function LinksPage() {
         url: platform.url,
       });
       // 저장 성공 시 해당 플랫폼 선택 목록에서 제거
-      setSelectedPlatforms((prev) => prev.filter((p) => p.platform !== platform.platform));
+      setSelectedPlatforms((prev) =>
+        prev.filter((p) => p.platform !== platform.platform)
+      );
     } catch (error) {
       console.error("Failed to save social link:", error);
     } finally {
@@ -205,11 +229,11 @@ export default function LinksPage() {
 
   // 플랫폼 토글 선택/해제
   const handleTogglePlatform = (platformId: string) => {
-    setSelectedPlatforms(prev => {
-      const existing = prev.find(p => p.platform === platformId);
+    setSelectedPlatforms((prev) => {
+      const existing = prev.find((p) => p.platform === platformId);
       if (existing) {
         // 이미 선택된 경우 해제
-        return prev.filter(p => p.platform !== platformId);
+        return prev.filter((p) => p.platform !== platformId);
       } else {
         // 최대 개수 체크 (기존 + 선택 중인 것 합쳐서 5개까지)
         if (socialLinks.length + prev.length >= MAX_SOCIAL_ICONS) {
@@ -222,10 +246,8 @@ export default function LinksPage() {
 
   // 선택된 플랫폼의 URL 업데이트
   const handleUpdateSelectedUrl = (platformId: string, url: string) => {
-    setSelectedPlatforms(prev =>
-      prev.map(p =>
-        p.platform === platformId ? { ...p, url } : p
-      )
+    setSelectedPlatforms((prev) =>
+      prev.map((p) => (p.platform === platformId ? { ...p, url } : p))
     );
   };
 
@@ -304,10 +326,13 @@ export default function LinksPage() {
     ...socialLinks,
     ...selectedPlatforms.map((p, idx) => ({
       id: `preview-${p.platform}-${idx}`,
+      user_id: "",
       platform: p.platform,
       url: p.url || `https://${p.platform}.com`,
       is_active: true,
       display_order: socialLinks.length + idx,
+      created_at: new Date().toISOString(),
+      updated_at: null,
     })),
   ].slice(0, MAX_SOCIAL_ICONS);
 
@@ -315,18 +340,22 @@ export default function LinksPage() {
   const previewLinks = [
     ...links,
     // 모달이 열려있고 제목과 URL이 있을 때만 미리보기에 추가
-    ...(isModalOpen && newLink.title.trim() ? [{
-      id: `preview-new-link`,
-      user_id: "",
-      title: newLink.title,
-      url: newLink.url || "#",
-      thumbnail_url: null,
-      display_order: links.length,
-      is_active: true,
-      click_count: 0,
-      created_at: new Date().toISOString(),
-      updated_at: null,
-    }] : []),
+    ...(isModalOpen && newLink.title.trim()
+      ? [
+          {
+            id: `preview-new-link`,
+            user_id: "",
+            title: newLink.title,
+            url: newLink.url || "#",
+            thumbnail_url: null,
+            display_order: links.length,
+            is_active: true,
+            click_count: 0,
+            created_at: new Date().toISOString(),
+            updated_at: null,
+          },
+        ]
+      : []),
   ];
 
   if ((isLoading || profileLoading) && links.length === 0) {
@@ -373,7 +402,9 @@ export default function LinksPage() {
               <div className="flex-1 space-y-2 min-w-0">
                 <div className="flex items-center gap-3">
                   <Avatar
-                    src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
+                    src={
+                      profile?.profile_image_url || "/avatar-placeholder.jpg"
+                    }
                     alt={profile?.username || "User"}
                     size={48}
                   />
@@ -385,13 +416,15 @@ export default function LinksPage() {
                       accept="image/*"
                       className="hidden"
                     />
-                    <Button 
-                      variant="secondary" 
+                    <Button
+                      variant="secondary"
                       className="text-xs"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={savingField === "profile_image"}
                     >
-                      {savingField === "profile_image" ? "Uploading..." : "Upload Photo"}
+                      {savingField === "profile_image"
+                        ? "Uploading..."
+                        : "Upload Photo"}
                     </Button>
                     <p className="mt-1 text-[10px] text-gray-500">
                       JPG, PNG, GIF (max 5MB)
@@ -415,12 +448,18 @@ export default function LinksPage() {
                 <Textarea
                   label="소개"
                   value={formData.bio}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, bio: e.target.value }))
-                  }
-                  placeholder="자기소개를 작성하세요"
-                  rows={2}
+                  onChange={(e) => {
+                    // 3줄까지만 허용
+                    const lines = e.target.value.split("\n");
+                    if (lines.length <= 3) {
+                      setFormData((prev) => ({ ...prev, bio: e.target.value }));
+                    }
+                  }}
+                  placeholder="자기소개를 작성하세요 (최대 3줄)"
+                  rows={3}
+                  maxLength={150}
                   disabled={isProfileSaving}
+                  className="leading-snug pb-3"
                 />
 
                 <div>
@@ -435,7 +474,8 @@ export default function LinksPage() {
                         onClick={() => handleBackgroundColorChange(color.hex)}
                         disabled={isProfileSaving}
                         className={`h-8 w-8 rounded-md border-2 transition-all hover:scale-105 ${
-                          formData.background_color.toLowerCase() === color.hex.toLowerCase()
+                          formData.background_color.toLowerCase() ===
+                          color.hex.toLowerCase()
                             ? "border-primary ring-2 ring-primary/30 scale-110"
                             : "border-gray-200 hover:border-gray-300"
                         } ${isProfileSaving ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -494,7 +534,9 @@ export default function LinksPage() {
                                 disabled={savingField === `edit-${link.id}`}
                                 className="text-[10px] text-blue-600 hover:text-blue-700 disabled:opacity-50"
                               >
-                                {savingField === `edit-${link.id}` ? "..." : "OK"}
+                                {savingField === `edit-${link.id}`
+                                  ? "..."
+                                  : "OK"}
                               </button>
                               <button
                                 onClick={() => {
@@ -548,7 +590,8 @@ export default function LinksPage() {
                 {availablePlatforms.length > 0 && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1.5">
-                      아이콘 추가 (최대 {MAX_SOCIAL_ICONS}개) - {socialLinks.length}/{MAX_SOCIAL_ICONS}
+                      아이콘 추가 (최대 {MAX_SOCIAL_ICONS}개) -{" "}
+                      {socialLinks.length}/{MAX_SOCIAL_ICONS}
                       {!canAddMoreSocial && (
                         <span className="ml-1 text-red-500">MAX</span>
                       )}
@@ -569,10 +612,14 @@ export default function LinksPage() {
                               isSelected
                                 ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
                                 : isDisabled
-                                ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
-                                : "border-gray-200 bg-white hover:bg-gray-50"
+                                  ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
+                                  : "border-gray-200 bg-white hover:bg-gray-50"
                             }`}
-                            title={isDisabled ? `SNS 아이콘은 최대 ${MAX_SOCIAL_ICONS}개까지 추가할 수 있습니다` : platform.name}
+                            title={
+                              isDisabled
+                                ? `SNS 아이콘은 최대 ${MAX_SOCIAL_ICONS}개까지 추가할 수 있습니다`
+                                : platform.name
+                            }
                           >
                             <SocialPlatformIcon
                               platform={platform.id}
@@ -590,12 +637,17 @@ export default function LinksPage() {
                 {selectedPlatforms.length > 0 && (
                   <div className="space-y-1.5 p-2 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-xs font-medium text-blue-700">
-                      URL 입력 후 Enter로 저장 ({selectedPlatforms.length}개 선택됨)
+                      URL 입력 후 Enter로 저장 ({selectedPlatforms.length}개
+                      선택됨)
                     </p>
                     {selectedPlatforms.map((selected) => {
-                      const isSavingThis = savingField === `social-${selected.platform}`;
+                      const isSavingThis =
+                        savingField === `social-${selected.platform}`;
                       return (
-                        <div key={selected.platform} className="flex items-center gap-1.5">
+                        <div
+                          key={selected.platform}
+                          className="flex items-center gap-1.5"
+                        >
                           <SocialPlatformIcon
                             platform={selected.platform}
                             size="sm"
@@ -605,7 +657,10 @@ export default function LinksPage() {
                             type="url"
                             value={selected.url}
                             onChange={(e) =>
-                              handleUpdateSelectedUrl(selected.platform, e.target.value)
+                              handleUpdateSelectedUrl(
+                                selected.platform,
+                                e.target.value
+                              )
                             }
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
@@ -618,10 +673,14 @@ export default function LinksPage() {
                             disabled={isSavingThis}
                           />
                           {isSavingThis ? (
-                            <span className="text-xs text-blue-500">저장중...</span>
+                            <span className="text-xs text-blue-500">
+                              저장중...
+                            </span>
                           ) : (
                             <button
-                              onClick={() => handleTogglePlatform(selected.platform)}
+                              onClick={() =>
+                                handleTogglePlatform(selected.platform)
+                              }
                               className="text-xs text-red-500 hover:text-red-700"
                             >
                               X
@@ -634,7 +693,7 @@ export default function LinksPage() {
                 )}
               </div>
             </div>
-            
+
             {/* 프로필 저장 버튼 영역 - 카드 하단 오른쪽 (항상 표시, 변경사항 있을 때만 활성화) */}
             <div className="mt-2 flex justify-end gap-1.5">
               <button
@@ -655,10 +714,22 @@ export default function LinksPage() {
         {/* 링크 관리 카드 */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between py-2 px-4">
-            <CardTitle className="text-sm">링크 관리</CardTitle>
-            <button 
+            <CardTitle className="text-sm">
+              링크 관리 ({links.length}/{MAX_LINKS})
+            </CardTitle>
+            <button
               onClick={() => setIsModalOpen(true)}
-              className="rounded bg-primary px-2 py-1 text-[11px] text-white hover:bg-primary/90"
+              disabled={links.length >= MAX_LINKS}
+              className={`rounded px-2 py-1 text-[11px] text-white ${
+                links.length >= MAX_LINKS
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-primary hover:bg-primary/90"
+              }`}
+              title={
+                links.length >= MAX_LINKS
+                  ? `링크는 최대 ${MAX_LINKS}개까지 추가할 수 있습니다`
+                  : "새 링크 추가"
+              }
             >
               + 추가
             </button>
@@ -668,7 +739,7 @@ export default function LinksPage() {
               <div className="py-4 text-center">
                 <p className="text-gray-600 text-xs">아직 링크가 없습니다</p>
                 <p className="mt-1 text-[10px] text-gray-500">
-                  "추가" 버튼을 클릭하여 첫 번째 링크를 만들어보세요
+                  &quot;추가&quot; 버튼을 클릭하여 첫 번째 링크를 만들어보세요
                 </p>
               </div>
             ) : (

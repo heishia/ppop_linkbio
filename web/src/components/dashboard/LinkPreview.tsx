@@ -43,7 +43,7 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
       <div className="absolute left-1/2 top-0 z-10 h-6 w-24 -translate-x-1/2 rounded-b-2xl bg-gray-800" />
 
       {/* 스크롤 가능한 콘텐츠 영역 */}
-      <div className="h-full overflow-y-auto pt-8">
+      <div className="h-full overflow-y-auto pt-8 pb-12">
         <div className="px-4 pb-6">
           {/* 프로필 섹션 */}
           <section className="flex flex-col items-center py-4">
@@ -99,32 +99,32 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
               ))
             )}
           </section>
-
-          {/* PPOPLINK 워터마크 푸터 - 무료 사용자용 */}
-          <footer className="mt-6 flex flex-col items-center">
-            <div className="relative group">
-              {/* X 버튼 - 클릭 시 결제 페이지로 이동 */}
-              <button
-                onClick={handleRemoveWatermark}
-                className="absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800/80 text-white opacity-70 transition-all hover:opacity-100 hover:bg-primary"
-                title="PRO upgrade to remove watermark"
-              >
-                <X className="h-3 w-3" />
-              </button>
-
-              {/* PPOPLINK 로고 */}
-              <a
-                href="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block px-4 py-2 text-base font-extrabold text-primary transition-all hover:scale-105"
-              >
-                PPOPLINK
-              </a>
-            </div>
-          </footer>
         </div>
       </div>
+
+      {/* PPOPLINK 워터마크 푸터 - 무료 사용자용, 하단 고정 */}
+      <footer className="absolute bottom-2 left-0 right-0 flex justify-center">
+        <div className="relative group">
+          {/* X 버튼 - 클릭 시 결제 페이지로 이동 */}
+          <button
+            onClick={handleRemoveWatermark}
+            className="absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800/80 text-white opacity-70 transition-all hover:opacity-100 hover:bg-primary"
+            title="PRO upgrade to remove watermark"
+          >
+            <X className="h-3 w-3" />
+          </button>
+
+          {/* PPOPLINK 로고 */}
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block px-4 py-1 text-sm font-extrabold text-primary/60 transition-all hover:text-primary hover:scale-105"
+          >
+            PPOPLINK
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

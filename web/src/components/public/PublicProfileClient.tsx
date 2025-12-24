@@ -49,29 +49,24 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
         )}
 
         {/* Links */}
-        <section className="flex flex-col gap-4 py-6">
+        <section className="flex flex-col gap-4 py-6 pb-16">
           {activeLinks.map((link) => (
             <PublicLinkButton key={link.id} link={link} username={profile.username} />
           ))}
         </section>
-
-        {/* PPOPLINK 워터마크 푸터 - 무료 사용자용 */}
-        <footer className="mt-12 flex flex-col items-center pb-8">
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col items-center transition-transform hover:scale-105"
-          >
-            <span className="text-2xl font-extrabold text-primary tracking-tight">
-              PPOPLINK
-            </span>
-            <span className="mt-1 text-xs text-gray-400 group-hover:text-gray-600 transition-colors">
-              Create your own link bio
-            </span>
-          </a>
-        </footer>
       </MobileContainer>
+
+      {/* PPOPLINK 워터마크 푸터 - 무료 사용자용, 하단 고정 */}
+      <footer className="fixed bottom-0 left-0 right-0 flex justify-center py-3 pointer-events-none">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pointer-events-auto text-sm font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
+        >
+          PPOPLINK
+        </a>
+      </footer>
     </main>
   );
 }

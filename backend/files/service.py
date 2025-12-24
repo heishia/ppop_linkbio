@@ -61,8 +61,24 @@ class FileService:
         file_name = f"{prefix}_{user_id}_{uuid4().hex[:8]}{extension}"
         file_path = f"{user_id}/{file_name}"
         
+        # #region agent log
+        import json, time; open(r"c:\Dev\ppop_linkbio\.cursor\debug.log", "a", encoding="utf-8").write(json.dumps({"location": "service.py:64", "message": "Upload params", "data": {"bucket": bucket, "file_path": file_path, "content_type": file.content_type}, "timestamp": time.time()*1000, "sessionId": "debug-session", "hypothesisId": "B"}) + "\n")
+        # #endregion
+        
         try:
             content = await file.read()
+            
+            # #region agent log
+            import json, time; open(r"c:\Dev\ppop_linkbio\.cursor\debug.log", "a", encoding="utf-8").write(json.dumps({"location": "service.py:70", "message": "Before upload", "data": {"content_size": len(content), "storage_url": str(db.client.storage_url) if hasattr(db.client, 'storage_url') else "N/A"}, "timestamp": time.time()*1000, "sessionId": "debug-session", "hypothesisId": "C"}) + "\n")
+            # #endregion
+            
+            # #region agent log
+            try:
+                buckets_list = db.storage.list_buckets()
+                import json, time; open(r"c:\Dev\ppop_linkbio\.cursor\debug.log", "a", encoding="utf-8").write(json.dumps({"location": "service.py:75", "message": "Available buckets", "data": {"buckets": [b.name if hasattr(b, 'name') else str(b) for b in buckets_list] if buckets_list else []}, "timestamp": time.time()*1000, "sessionId": "debug-session", "hypothesisId": "B"}) + "\n")
+            except Exception as be:
+                import json, time; open(r"c:\Dev\ppop_linkbio\.cursor\debug.log", "a", encoding="utf-8").write(json.dumps({"location": "service.py:77", "message": "Bucket list error", "data": {"error": str(be)}, "timestamp": time.time()*1000, "sessionId": "debug-session", "hypothesisId": "D"}) + "\n")
+            # #endregion
             
             db.storage.from_(bucket).upload(
                 path=file_path,
@@ -76,6 +92,9 @@ class FileService:
             return public_url
             
         except Exception as e:
+            # #region agent log
+            import json, time; open(r"c:\Dev\ppop_linkbio\.cursor\debug.log", "a", encoding="utf-8").write(json.dumps({"location": "service.py:92", "message": "Upload exception", "data": {"error": str(e), "error_type": type(e).__name__, "error_dict": e.__dict__ if hasattr(e, '__dict__') else {}}, "timestamp": time.time()*1000, "sessionId": "debug-session", "hypothesisId": "E"}) + "\n")
+            # #endregion
             logger.error(f"File upload failed: {e}")
             raise FileUploadError(detail=str(e))
     
