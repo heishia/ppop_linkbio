@@ -24,8 +24,9 @@ from supabase import create_client, Client
 # backend 유틸리티 import
 from backend.utils.linkid_utils import encode_user_seq
 
-# 환경변수 로드
-load_dotenv()
+# 환경변수 로드 (.env.dev 파일 우선)
+load_dotenv(".env.dev")
+load_dotenv()  # .env 파일도 fallback으로 로드
 
 
 def get_supabase_client() -> Client:
