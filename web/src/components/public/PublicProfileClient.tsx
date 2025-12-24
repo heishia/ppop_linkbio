@@ -37,7 +37,7 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
             {profile.display_name || profile.username}
           </h1>
           {profile.bio && (
-            <p className="mt-2 text-center font-normal text-bio">
+            <p className="mt-2 text-center font-normal text-bio whitespace-pre-line">
               {profile.bio}
             </p>
           )}

@@ -56,7 +56,7 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
               {profile?.display_name || profile?.username || "Display Name"}
             </h2>
             {profile?.bio && (
-              <p className="mt-1 text-center text-xs text-gray-600 line-clamp-2">
+              <p className="mt-1 text-center text-xs text-gray-600 line-clamp-2 whitespace-pre-line">
                 {profile.bio}
               </p>
             )}

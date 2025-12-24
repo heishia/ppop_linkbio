@@ -15,7 +15,7 @@ export function ProfileSection({ profile, className }: ProfileSectionProps) {
       <h1 className="mt-4 text-center font-extrabold text-username">
         {profile.username}
       </h1>
-      <p className="mt-2 text-center font-normal text-bio">{profile.bio}</p>
+      <p className="mt-2 text-center font-normal text-bio whitespace-pre-line">{profile.bio}</p>
     </section>
   );
 }

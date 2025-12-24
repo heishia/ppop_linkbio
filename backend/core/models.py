@@ -46,6 +46,12 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
 
 
+class ButtonStyle(str, Enum):
+    DEFAULT = "default"      # 기본 스타일 (primary 색상)
+    OUTLINE = "outline"      # 하얀 배경 + 검은 외곽선
+    FILLED = "filled"        # 검은 배경 + 하얀 텍스트
+
+
 class UserUpdate(BaseModel):
     display_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
@@ -53,6 +59,7 @@ class UserUpdate(BaseModel):
     background_image_url: Optional[str] = None
     background_color: Optional[str] = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
     theme: Optional[str] = None
+    button_style: Optional[ButtonStyle] = None
 
 
 class User(UserBase, TimestampMixin):
@@ -63,6 +70,7 @@ class User(UserBase, TimestampMixin):
     background_image_url: Optional[str] = None
     background_color: Optional[str] = None
     theme: str = "default"
+    button_style: str = "default"                 # 링크 버튼 스타일 (default, outline, filled)
     is_active: bool = True
     is_admin: bool = False
     
@@ -157,6 +165,7 @@ class PublicProfile(BaseModel):
     background_image_url: Optional[str] = None
     background_color: Optional[str] = None
     theme: str = "default"
+    button_style: str = "default"                 # 링크 버튼 스타일
     links: List[Link] = []
     social_links: List[SocialLink] = []
 
