@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useLinksStore } from "@/store/linksStore";
 import { useProfileStore } from "@/store/profileStore";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -27,7 +27,10 @@ interface SelectedPlatform {
 export default function LinksPage() {
   const { links, socialLinks, isLoading, error, fetchLinks, fetchSocialLinks, createLink, clearError, createSocialLink, updateSocialLink, deleteSocialLink } =
     useLinksStore();
-  const { profile, isLoading: profileLoading, error: profileError, fetchProfile, updateProfile, clearError: clearProfileError } = useProfileStore();
+  const { profile, isLoading: profileLoading, error: profileError, fetchProfile, updateProfile, uploadProfileImage, clearError: clearProfileError } = useProfileStore();
+  
+  // 프로필 이미지 업로드를 위한 ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // 링크 추가 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -208,6 +211,36 @@ export default function LinksPage() {
     }
   };
 
+  // 프로필 이미지 업로드 핸들러
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSavingField("profile_image");
+    try {
+      await uploadProfileImage(file);
+    } catch (error) {
+      console.error("Failed to upload profile image:", error);
+    } finally {
+      setSavingField(null);
+      // input 초기화 (같은 파일 재선택 가능하도록)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // 미리보기용 프로필 객체 (로컬 formData 반영)
+  const previewProfile = useMemo(() => {
+    if (!profile) return null;
+    return {
+      ...profile,
+      display_name: formData.display_name,
+      bio: formData.bio,
+      background_color: formData.background_color,
+    };
+  }, [profile, formData.display_name, formData.bio, formData.background_color]);
+
   // 이미 추가된 플랫폼 목록
   const addedPlatforms = socialLinks.map((link) => link.platform.toLowerCase());
 
@@ -286,9 +319,26 @@ export default function LinksPage() {
                     alt={profile?.username || "User"}
                     size={48}
                   />
-                  <Button variant="secondary" className="text-xs">
-                    사진 업로드
-                  </Button>
+                  <div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="secondary" 
+                      className="text-xs"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={savingField === "profile_image"}
+                    >
+                      {savingField === "profile_image" ? "Uploading..." : "Upload Photo"}
+                    </Button>
+                    <p className="mt-1 text-[10px] text-gray-500">
+                      JPG, PNG, GIF (max 5MB)
+                    </p>
+                  </div>
                 </div>
 
                 <Input
@@ -572,7 +622,7 @@ export default function LinksPage() {
             미리보기
           </h2>
           <LinkPreview
-            profile={profile}
+            profile={previewProfile}
             links={previewLinks}
             socialLinks={previewSocialLinks}
           />
