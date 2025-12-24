@@ -180,8 +180,6 @@ export default function LinksPage() {
 
   // 소셜 링크 삭제
   const handleDeleteSocialLink = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this social link?")) return;
-
     try {
       await deleteSocialLink(id);
     } catch (error) {

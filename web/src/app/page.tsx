@@ -13,7 +13,10 @@ export default function Home() {
             <span className="text-primary">하나의 링크</span>
           </h1>
           <p className="mt-6 text-xl text-gray-600">
-            하나의 링크에 여러 링크들을 예쁘게 넣어보세요! 간단하고 예쁜 링크바이오 뽑링크
+            하나의 링크에 여러 링크들을 예쁘게 넣어보세요!
+          </p>
+          <p className="mt-3 text-lg text-primary font-semibold">
+            간단하고 예쁜 링크바이오 뽑링크
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link href="/register">

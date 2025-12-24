@@ -15,6 +15,8 @@ export const SOCIAL_PLATFORMS = [
   { id: "soundcloud", name: "SoundCloud", color: "#FF5500" },
   { id: "github", name: "GitHub", color: "#181717" },
   { id: "linkedin", name: "LinkedIn", color: "#0A66C2" },
+  { id: "naverblog", name: "Naver Blog", color: "#03C75A" },
+  { id: "email", name: "Email", color: "#EA4335" },
 ] as const;
 
 export type SocialPlatformId = (typeof SOCIAL_PLATFORMS)[number]["id"];
@@ -100,6 +102,19 @@ const LinkedInIcon = () => (
   </svg>
 );
 
+const NaverBlogIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z" />
+  </svg>
+);
+
+const EmailIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+    <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+  </svg>
+);
+
 // 플랫폼 ID에 따른 아이콘 컴포넌트 매핑
 const iconComponents: Record<string, React.FC> = {
   instagram: InstagramIcon,
@@ -114,6 +129,8 @@ const iconComponents: Record<string, React.FC> = {
   soundcloud: SoundCloudIcon,
   github: GitHubIcon,
   linkedin: LinkedInIcon,
+  naverblog: NaverBlogIcon,
+  email: EmailIcon,
 };
 
 // 플랫폼별 색상
@@ -130,6 +147,8 @@ const platformColors: Record<string, string> = {
   soundcloud: "#FF5500",
   github: "#181717",
   linkedin: "#0A66C2",
+  naverblog: "#03C75A",
+  email: "#EA4335",
 };
 
 const sizeClasses = {
