@@ -53,6 +53,9 @@ logs/
 # Node (if any)
 node_modules/
 
+# Frontend (deployed separately)
+web/
+
 # Figma MCP
 cursor-talk-to-figma-mcp/
 

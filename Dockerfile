@@ -1,5 +1,5 @@
 # Multi-stage build for production
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -34,7 +34,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application code
 COPY backend ./backend
-COPY database ./database
 
 # Set Python path
 ENV PYTHONPATH=/app
