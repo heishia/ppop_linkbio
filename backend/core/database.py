@@ -12,9 +12,11 @@ from backend.core.logger import get_logger
 logger = get_logger(__name__)
 
 _supabase_client: Optional[Client] = None
+_supabase_admin_client: Optional[Client] = None
 
 
 def get_supabase_client() -> Client:
+    """anon 키를 사용하는 일반 클라이언트 (RLS 적용)"""
     global _supabase_client
     
     if _supabase_client is None:
@@ -28,21 +30,34 @@ def get_supabase_client() -> Client:
 
 
 def get_supabase_admin_client() -> Client:
-    """서비스 롤 키를 사용하는 관리자 클라이언트"""
-    return create_client(
-        settings.SUPABASE_URL,
-        settings.SUPABASE_SERVICE_KEY or settings.SUPABASE_KEY
-    )
+    """서비스 롤 키를 사용하는 관리자 클라이언트 (RLS 우회)"""
+    global _supabase_admin_client
+    
+    if _supabase_admin_client is None:
+        # 서비스 롤 키가 있으면 사용, 없으면 anon key 사용
+        key = settings.SUPABASE_SERVICE_KEY if settings.SUPABASE_SERVICE_KEY else settings.SUPABASE_KEY
+        _supabase_admin_client = create_client(
+            settings.SUPABASE_URL,
+            key
+        )
+        if settings.SUPABASE_SERVICE_KEY:
+            logger.info("Supabase admin client initialized with service role key")
+        else:
+            logger.warning("Supabase admin client using anon key - RLS will be applied")
+    
+    return _supabase_admin_client
 
 
 class SupabaseDB:
+    """백엔드 서비스용 DB 클라이언트 - 서비스 롤 키 사용 (RLS 우회)"""
     def __init__(self):
         self._client: Optional[Client] = None
     
     @property
     def client(self) -> Client:
         if self._client is None:
-            self._client = get_supabase_client()
+            # 백엔드 서비스에서는 서비스 롤 키를 사용하여 RLS 우회
+            self._client = get_supabase_admin_client()
         return self._client
     
     def table(self, name: str):

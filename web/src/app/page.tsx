@@ -31,7 +31,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="px-4 py-20 bg-white">
+      <section className="px-4 pt-20 pb-32 bg-white">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-center text-3xl font-bold text-gray-900 font-heading">
             필요한 모든 기능
@@ -75,7 +75,7 @@ export default function Home() {
       </section>
 
       {/* Free Appeal Section */}
-      <section className="px-4 py-20 bg-gradient-to-r from-primary via-blue-500 to-indigo-600">
+      <section className="px-4 py-24 bg-gradient-to-r from-primary via-blue-500 to-indigo-600">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-lg text-white/80 font-medium">
             링크인바이오 기능 추가하면 유료?
@@ -84,20 +84,6 @@ export default function Home() {
             뽑링크는 가입만하면
             <span className="block mt-2 text-yellow-300">무료!</span>
           </h2>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
-              무제한 링크
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
-              커스텀 테마
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
-              분석 기능
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
-              평생 무료
-            </div>
-          </div>
           <div className="mt-10">
             <Link href="/register">
               <Button variant="secondary" className="px-10 py-4 text-lg bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
@@ -131,7 +117,7 @@ export default function Home() {
       <footer className="border-t border-gray-200 bg-white px-4 py-12">
         <div className="mx-auto max-w-6xl text-center">
           <p className="text-sm text-gray-600">
-            © 2024 PPOPLINK. All rights reserved.
+            © 2025 PPOPLINK. All rights reserved.
           </p>
         </div>
       </footer>

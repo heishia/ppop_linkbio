@@ -90,7 +90,7 @@ export const linksApi = {
   // Social Links
   getSocialLinks: async (): Promise<{ data: SocialLink[] }> => {
     const response = await apiClient.get<{ data: SocialLink[] }>(
-      "/api/links/social"
+      "/api/social-links"
     );
     return response.data;
   },
@@ -99,7 +99,7 @@ export const linksApi = {
     data: SocialLinkCreateData
   ): Promise<{ data: SocialLink }> => {
     const response = await apiClient.post<{ data: SocialLink }>(
-      "/api/links/social",
+      "/api/social-links",
       data
     );
     return response.data;
@@ -110,7 +110,7 @@ export const linksApi = {
     data: SocialLinkUpdateData
   ): Promise<{ data: SocialLink }> => {
     const response = await apiClient.put<{ data: SocialLink }>(
-      `/api/links/social/${socialLinkId}`,
+      `/api/social-links/${socialLinkId}`,
       data
     );
     return response.data;
@@ -118,7 +118,7 @@ export const linksApi = {
 
   deleteSocialLink: async (socialLinkId: string): Promise<{ message: string }> => {
     const response = await apiClient.delete<{ message: string }>(
-      `/api/links/social/${socialLinkId}`
+      `/api/social-links/${socialLinkId}`
     );
     return response.data;
   },

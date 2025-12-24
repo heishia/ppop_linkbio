@@ -205,6 +205,36 @@ export default function LinksPage() {
       formData.background_color !== (profile.background_color || "#ffffff")
     )) || selectedPlatforms.length > 0;
 
+  // 미리보기용 소셜 링크 (기존 + 선택 중인 것 합침)
+  const previewSocialLinks = [
+    ...socialLinks,
+    ...selectedPlatforms.map((p, idx) => ({
+      id: `preview-${p.platform}-${idx}`,
+      platform: p.platform,
+      url: p.url || `https://${p.platform}.com`,
+      is_active: true,
+      display_order: socialLinks.length + idx,
+    })),
+  ];
+
+  // 미리보기용 링크 (기존 + 모달에서 입력 중인 것 합침)
+  const previewLinks = [
+    ...links,
+    // 모달이 열려있고 제목과 URL이 있을 때만 미리보기에 추가
+    ...(isModalOpen && newLink.title.trim() ? [{
+      id: `preview-new-link`,
+      user_id: "",
+      title: newLink.title,
+      url: newLink.url || "#",
+      thumbnail_url: null,
+      display_order: links.length,
+      is_active: true,
+      click_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: null,
+    }] : []),
+  ];
+
   if ((isLoading || profileLoading) && links.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -509,8 +539,8 @@ export default function LinksPage() {
           </h2>
           <LinkPreview
             profile={profile}
-            links={links}
-            socialLinks={socialLinks}
+            links={previewLinks}
+            socialLinks={previewSocialLinks}
           />
         </div>
       </div>

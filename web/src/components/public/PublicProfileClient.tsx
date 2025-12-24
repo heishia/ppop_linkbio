@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { PublicProfile } from "@/lib/api/public";
 import { PublicLinkButton } from "./PublicLinkButton";
 import { SocialIcons } from "./SocialIcons";
+import { DEFAULT_BACKGROUND_COLOR } from "@/lib/constants/colors";
 
 interface PublicProfileClientProps {
   profile: PublicProfile;
@@ -17,8 +18,13 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
     (link) => link.is_active
   );
 
+  // 사용자가 설정한 배경색 사용 (없으면 기본 화이트)
+  const bgColor = profile.background_color || DEFAULT_BACKGROUND_COLOR;
+
   return (
-    <main className="min-h-screen bg-white py-8 sm:py-12 md:py-16">
+    <main
+      className="min-h-screen py-8 sm:py-12 md:py-16"
+      style={{ backgroundColor: bgColor }}
       <MobileContainer>
         {/* Profile Section */}
         <section className="flex flex-col items-center py-8">

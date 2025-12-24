@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { SocialPlatformIcon } from "@/components/ui/SocialPlatformIcon";
 import { Link, SocialLink } from "@/lib/api/links";
 import { User } from "@/lib/api/auth";
+import { DEFAULT_BACKGROUND_COLOR } from "@/lib/constants/colors";
 
 interface LinkPreviewProps {
   profile: User | null;
@@ -19,8 +20,13 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
   const activeLinks = links.filter((link) => link.is_active);
   const activeSocialLinks = socialLinks.filter((link) => link.is_active);
 
+  // 사용자가 설정한 배경색 사용 (없으면 기본 화이트)
+  const bgColor = profile?.background_color || DEFAULT_BACKGROUND_COLOR;
+
   return (
-    <div className="relative mx-auto h-[600px] w-[280px] overflow-hidden rounded-[40px] border-[8px] border-gray-800 bg-white shadow-xl">
+    <div
+      className="relative mx-auto h-[600px] w-[280px] overflow-hidden rounded-[40px] border-[8px] border-gray-800 shadow-xl"
+      style={{ backgroundColor: bgColor }}>
       {/* 모바일 상단 노치 */}
       <div className="absolute left-1/2 top-0 z-10 h-6 w-24 -translate-x-1/2 rounded-b-2xl bg-gray-800" />
       
