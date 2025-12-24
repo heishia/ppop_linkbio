@@ -25,6 +25,7 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
     <main
       className="min-h-screen py-8 sm:py-12 md:py-16"
       style={{ backgroundColor: bgColor }}
+    >
       <MobileContainer>
         {/* Profile Section */}
         <section className="flex flex-col items-center py-8">
@@ -54,19 +55,21 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
           ))}
         </section>
 
-        {/* Footer */}
-        <footer className="mt-8 text-center text-sm text-gray-500">
-          <p>
-            PPOPLINK로 나만의 링크 바이오를 만들어보세요{" "}
-            <a
-              href="/"
-              className="font-semibold text-primary hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+        {/* PPOPLINK 워터마크 푸터 - 무료 사용자용 */}
+        <footer className="mt-12 flex flex-col items-center pb-8">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center transition-transform hover:scale-105"
+          >
+            <span className="text-2xl font-extrabold text-primary tracking-tight">
               PPOPLINK
-            </a>
-          </p>
+            </span>
+            <span className="mt-1 text-xs text-gray-400 group-hover:text-gray-600 transition-colors">
+              Create your own link bio
+            </span>
+          </a>
         </footer>
       </MobileContainer>
     </main>

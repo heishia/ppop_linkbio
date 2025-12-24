@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { SocialPlatformIcon } from "@/components/ui/SocialPlatformIcon";
 import { Link, SocialLink } from "@/lib/api/links";
 import { User } from "@/lib/api/auth";
 import { DEFAULT_BACKGROUND_COLOR } from "@/lib/constants/colors";
+import { X } from "lucide-react";
 
 interface LinkPreviewProps {
   profile: User | null;
@@ -16,12 +18,19 @@ interface LinkPreviewProps {
 
 // 미리보기 전용 컴포넌트 - 대시보드에서 실제 링크 페이지가 어떻게 보일지 표시
 export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
+  const router = useRouter();
+  
   // 활성화된 링크만 필터링
   const activeLinks = links.filter((link) => link.is_active);
   const activeSocialLinks = socialLinks.filter((link) => link.is_active);
 
   // 사용자가 설정한 배경색 사용 (없으면 기본 화이트)
   const bgColor = profile?.background_color || DEFAULT_BACKGROUND_COLOR;
+
+  // X 버튼 클릭 시 결제 페이지로 이동
+  const handleRemoveWatermark = () => {
+    router.push("/dashboard/pricing");
+  };
 
   return (
     <div
@@ -88,10 +97,30 @@ export function LinkPreview({ profile, links, socialLinks }: LinkPreviewProps) {
             )}
           </section>
 
-          {/* 푸터 */}
-          <footer className="mt-4 text-center">
-            <p className="text-[10px] text-gray-400">
-              PPOPLINK
+          {/* PPOPLINK 워터마크 푸터 - 무료 사용자용 */}
+          <footer className="mt-6 flex flex-col items-center">
+            <div className="relative group">
+              {/* X 버튼 - 클릭 시 결제 페이지로 이동 */}
+              <button
+                onClick={handleRemoveWatermark}
+                className="absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800/80 text-white opacity-70 transition-all hover:opacity-100 hover:bg-primary"
+                title="PRO upgrade to remove watermark"
+              >
+                <X className="h-3 w-3" />
+              </button>
+              
+              {/* PPOPLINK 로고 */}
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-base font-extrabold text-primary transition-all hover:scale-105"
+              >
+                PPOPLINK
+              </a>
+            </div>
+            <p className="mt-1 text-[9px] text-gray-400">
+              Free Plan
             </p>
           </footer>
         </div>
