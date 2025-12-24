@@ -12,6 +12,11 @@ const navItems = [
     icon: "link",
   },
   {
+    name: "분석",
+    href: "/dashboard/analytics",
+    icon: "chart",
+  },
+  {
     name: "설정",
     href: "/dashboard/settings",
     icon: "settings",

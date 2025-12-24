@@ -10,6 +10,7 @@ from backend.core.exceptions import UserNotFoundError
 from backend.core.logger import get_logger
 from backend.core.models import PublicProfile, Link, SocialLink, SocialPlatform
 from backend.links.service import link_service
+from backend.analytics.service import analytics_service
 
 logger = get_logger(__name__)
 
@@ -49,7 +50,13 @@ class PublicService:
             social_links=social_links
         )
     
-    async def record_click(self, username: str, link_id: UUID) -> None:
+    async def record_click(
+        self, 
+        username: str, 
+        link_id: UUID, 
+        user_agent: str = None, 
+        ip_address: str = None
+    ) -> None:
         # 사용자 확인
         user_result = db.table(self.TABLE_USERS).select("id").eq(
             "username", username
@@ -58,8 +65,11 @@ class PublicService:
         if not user_result.data:
             raise UserNotFoundError(detail="Profile not found")
         
-        # 클릭 수 증가
+        # 클릭 수 증가 (links 테이블)
         await link_service.increment_click_count(link_id)
+        
+        # 상세 클릭 이벤트 기록 (analytics 테이블)
+        await analytics_service.record_click_event(link_id, user_agent, ip_address)
         
         logger.info(f"Click recorded: username={username}, link_id={link_id}")
     

@@ -100,6 +100,34 @@ CREATE POLICY "Users can manage own social links" ON social_links
 CREATE POLICY "Active social links are viewable" ON social_links
     FOR SELECT USING (is_active = TRUE);
 
+-- Click events table (for detailed analytics)
+CREATE TABLE IF NOT EXISTS click_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    link_id UUID NOT NULL REFERENCES links(id) ON DELETE CASCADE,
+    clicked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    user_agent TEXT,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Click events indexes
+CREATE INDEX IF NOT EXISTS idx_click_events_link_id ON click_events(link_id);
+CREATE INDEX IF NOT EXISTS idx_click_events_clicked_at ON click_events(clicked_at);
+
+-- RLS for click_events
+ALTER TABLE click_events ENABLE ROW LEVEL SECURITY;
+
+-- Click events policies
+CREATE POLICY "Anyone can insert click events" ON click_events
+    FOR INSERT WITH CHECK (TRUE);
+
+CREATE POLICY "Users can view own link click events" ON click_events
+    FOR SELECT USING (
+        link_id IN (
+            SELECT id FROM links WHERE user_id = auth.uid()::text::uuid
+        )
+    );
+
 -- Storage buckets (run in Supabase dashboard)
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('profiles', 'profiles', true);
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('backgrounds', 'backgrounds', true);

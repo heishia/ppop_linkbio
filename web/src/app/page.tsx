@@ -13,7 +13,7 @@ export default function Home() {
             <span className="text-primary">하나의 링크</span>
           </h1>
           <p className="mt-6 text-xl text-gray-600">
-            콘텐츠를 공유하고, 팬들과 연결하며, 모든 것을 한 곳에서 관리하세요.
+            하나의 링크에 여러 링크들을 예쁘게 넣어보세요! 간단하고 예쁜 링크바이오 뽑링크
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link href="/register">
@@ -70,6 +70,40 @@ export default function Home() {
                 링크의 클릭 수와 조회수를 추적하세요.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Free Appeal Section */}
+      <section className="px-4 py-20 bg-gradient-to-r from-primary via-blue-500 to-indigo-600">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="text-lg text-white/80 font-medium">
+            링크인바이오 기능 추가하면 유료?
+          </p>
+          <h2 className="mt-4 text-4xl sm:text-5xl font-extrabold text-white font-heading">
+            뽑링크는 가입만하면
+            <span className="block mt-2 text-yellow-300">무료!</span>
+          </h2>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
+              무제한 링크
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
+              커스텀 테마
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
+              분석 기능
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-medium">
+              평생 무료
+            </div>
+          </div>
+          <div className="mt-10">
+            <Link href="/register">
+              <Button variant="secondary" className="px-10 py-4 text-lg bg-white text-primary hover:bg-gray-100 font-bold shadow-xl">
+                지금 바로 시작하기
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
