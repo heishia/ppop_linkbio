@@ -107,6 +107,34 @@ export default function LinksPage() {
   // 이미지 업로드 완료 상태
   const [imageUploadComplete, setImageUploadComplete] = useState(false);
 
+  // 링크 복사 상태
+  const [isCopied, setIsCopied] = useState(false);
+
+  // 공개 프로필 URL 생성
+  const publicProfileUrl = useMemo(() => {
+    if (typeof window === "undefined" || !profile?.username) return "";
+    return `${window.location.origin}/${profile.username}`;
+  }, [profile?.username]);
+
+  // 링크 복사 핸들러
+  const handleCopyLink = async () => {
+    if (!publicProfileUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(publicProfileUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy link:", error);
+    }
+  };
+
+  // 내 페이지 새 탭에서 열기
+  const handleOpenMyPage = () => {
+    if (!publicProfileUrl) return;
+    window.open(publicProfileUrl, "_blank");
+  };
+
   useEffect(() => {
     fetchLinks();
     fetchSocialLinks();
@@ -762,6 +790,91 @@ export default function LinksPage() {
           </CardContent>
         </Card>
 
+        {/* 내 페이지 공유 카드 - 모바일 (최하단) */}
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm">내 페이지 공유</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-3">
+            {/* 공개 URL 표시 */}
+            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 mb-1">내 페이지 주소</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {publicProfileUrl || "Loading..."}
+                </p>
+              </div>
+            </div>
+
+            {/* 버튼 영역 */}
+            <div className="flex gap-2">
+              <Button
+                variant="primary"
+                className="flex-1 text-sm whitespace-nowrap"
+                onClick={handleCopyLink}
+                disabled={!publicProfileUrl}
+              >
+                {isCopied ? (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-1.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-1.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Copy Link
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1 text-sm whitespace-nowrap"
+                onClick={handleOpenMyPage}
+                disabled={!publicProfileUrl}
+              >
+                <svg
+                  className="w-4 h-4 mr-1.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                Open Page
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 플로팅 미리보기 버튼 */}
         <button
           onClick={() => setIsPreviewModalOpen(true)}
@@ -905,6 +1018,93 @@ export default function LinksPage() {
             {error || profileError}
           </div>
         )}
+
+        {/* 내 페이지 공유 카드 - 데스크톱 */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              {/* 왼쪽: URL 정보 */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                  내 페이지 공유
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">내 페이지 주소:</span>
+                  <span className="text-sm font-medium text-primary truncate">
+                    {publicProfileUrl || "Loading..."}
+                  </span>
+                </div>
+              </div>
+
+              {/* 오른쪽: 버튼 영역 */}
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="primary"
+                  className="text-xs px-3 py-2 whitespace-nowrap"
+                  onClick={handleCopyLink}
+                  disabled={!publicProfileUrl}
+                >
+                  {isCopied ? (
+                    <>
+                      <svg
+                        className="w-3.5 h-3.5 mr-1 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-3.5 h-3.5 mr-1 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="text-xs px-3 py-2 whitespace-nowrap"
+                  onClick={handleOpenMyPage}
+                  disabled={!publicProfileUrl}
+                >
+                  <svg
+                    className="w-3.5 h-3.5 mr-1 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                  Open Page
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 프로필 설정 카드 */}
         <Card>
