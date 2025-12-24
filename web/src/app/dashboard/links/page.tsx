@@ -16,7 +16,9 @@ import {
   SocialPlatformIcon,
   SOCIAL_PLATFORMS,
 } from "@/components/ui/SocialPlatformIcon";
+import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { PASTEL_COLORS } from "@/lib/constants/colors";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 // SNS 아이콘 최대 개수 제한
 const MAX_SOCIAL_ICONS = 5;
@@ -97,6 +99,13 @@ export default function LinksPage() {
 
   // 저장 중 상태 (개별 필드별)
   const [savingField, setSavingField] = useState<string | null>(null);
+
+  // 이미지 크롭 모달 상태
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+
+  // 이미지 업로드 완료 상태
+  const [imageUploadComplete, setImageUploadComplete] = useState(false);
 
   useEffect(() => {
     fetchLinks();
@@ -283,23 +292,52 @@ export default function LinksPage() {
     }
   };
 
-  // 프로필 이미지 업로드 핸들러
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 파일 선택 시 크롭 모달 열기
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 파일을 Data URL로 변환하여 크롭 모달에 전달
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedImageSrc(reader.result as string);
+      setIsCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+
+    // input 초기화 (같은 파일 재선택 가능하도록)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // 크롭 완료 후 이미지 업로드
+  const handleCroppedImageUpload = async (croppedBlob: Blob) => {
     setSavingField("profile_image");
+    setImageUploadComplete(false);
     try {
+      // Blob을 File로 변환
+      const file = new File([croppedBlob], "profile.jpg", {
+        type: "image/jpeg",
+      });
       await uploadProfileImage(file);
+      // 업로드 성공 표시
+      setImageUploadComplete(true);
+      // 3초 후 완료 메시지 숨기기
+      setTimeout(() => {
+        setImageUploadComplete(false);
+      }, 3000);
     } catch (error) {
       console.error("Failed to upload profile image:", error);
     } finally {
       setSavingField(null);
-      // input 초기화 (같은 파일 재선택 가능하도록)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
+  };
+
+  // 크롭 모달 닫기
+  const handleCloseCropModal = () => {
+    setIsCropModalOpen(false);
+    setSelectedImageSrc(null);
   };
 
   // 미리보기용 프로필 객체 (로컬 formData 반영)
@@ -320,6 +358,12 @@ export default function LinksPage() {
   const availablePlatforms = SOCIAL_PLATFORMS.filter(
     (p) => !addedPlatforms.includes(p.id)
   );
+
+  // 모바일 여부 확인
+  const isMobile = useIsMobile();
+
+  // 모바일 미리보기 모달 상태
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   // 미리보기용 소셜 링크 (기존 + 선택 중인 것 합침, 최대 5개까지만)
   const previewSocialLinks = [
@@ -366,6 +410,485 @@ export default function LinksPage() {
     );
   }
 
+  // ========== 모바일 레이아웃 ==========
+  if (isMobile) {
+    return (
+      <div className="px-4 py-3 space-y-4 pb-24">
+        {(error || profileError) && (
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error || profileError}
+          </div>
+        )}
+
+        {/* 프로필 설정 카드 - 모바일 */}
+        <Card>
+          {profileSaveMessage && (
+            <div
+              className={`mx-4 mt-3 rounded p-2 text-sm ${
+                profileSaveMessage.type === "success"
+                  ? "bg-green-50 text-green-700"
+                  : "bg-red-50 text-red-700"
+              }`}
+            >
+              {profileSaveMessage.text}
+            </div>
+          )}
+          <CardContent className="p-4 space-y-4">
+            {/* 프로필 이미지 영역 */}
+            <div className="flex items-center gap-4">
+              <Avatar
+                src={profile?.profile_image_url || "/avatar-placeholder.jpg"}
+                alt={profile?.username || "User"}
+                size={64}
+              />
+              <div className="flex-1">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <Button
+                  variant="secondary"
+                  className="text-sm w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={savingField === "profile_image"}
+                >
+                  {savingField === "profile_image"
+                    ? "Uploading..."
+                    : "Upload Photo"}
+                </Button>
+                <div className="mt-1 flex items-center gap-2">
+                  <p className="text-xs text-gray-500">
+                    JPG, PNG, GIF (max 5MB)
+                  </p>
+                  {imageUploadComplete && (
+                    <span className="text-xs text-green-600 font-medium">
+                      Done!
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 표시 이름 */}
+            <Input
+              label="표시 이름"
+              value={formData.display_name}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  display_name: e.target.value,
+                }))
+              }
+              placeholder="이름을 입력하세요"
+              disabled={isProfileSaving}
+            />
+
+            {/* 소개 */}
+            <Textarea
+              label="소개"
+              value={formData.bio}
+              onChange={(e) => {
+                const lines = e.target.value.split("\n");
+                if (lines.length <= 3) {
+                  setFormData((prev) => ({ ...prev, bio: e.target.value }));
+                }
+              }}
+              placeholder="자기소개를 작성하세요 (최대 3줄)"
+              rows={3}
+              maxLength={150}
+              disabled={isProfileSaving}
+            />
+
+            {/* 배경 색상 */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                배경 색상
+              </label>
+              <div className="grid grid-cols-6 gap-2">
+                {PASTEL_COLORS.map((color) => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    onClick={() => handleBackgroundColorChange(color.hex)}
+                    disabled={isProfileSaving}
+                    className={`h-10 w-10 rounded-lg border-2 transition-all ${
+                      formData.background_color.toLowerCase() ===
+                      color.hex.toLowerCase()
+                        ? "border-primary ring-2 ring-primary/30 scale-110"
+                        : "border-gray-200"
+                    } ${isProfileSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.nameKo}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 프로필 저장 버튼 */}
+            <div className="pt-2">
+              <Button
+                variant="primary"
+                onClick={handleSaveProfile}
+                disabled={isProfileSaving || !isProfileDirty}
+                className="w-full"
+              >
+                {isProfileSaving ? "Saving..." : "Save Profile"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SNS 아이콘 설정 카드 - 모바일 */}
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm">
+              SNS ({socialLinks.length}/{MAX_SOCIAL_ICONS})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-3">
+            {/* 기존 소셜 링크 목록 */}
+            {socialLinks.length > 0 && (
+              <div className="space-y-2">
+                {socialLinks.map((link) => (
+                  <div
+                    key={link.id}
+                    className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
+                  >
+                    <SocialPlatformIcon
+                      platform={link.platform}
+                      size="sm"
+                      showBackground
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-gray-900">
+                        {SOCIAL_PLATFORMS.find(
+                          (p) => p.id === link.platform.toLowerCase()
+                        )?.name || link.platform}
+                      </div>
+                      {editingSocialId === link.id ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="url"
+                            value={editingUrl}
+                            onChange={(e) => setEditingUrl(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleUpdateSocialLink(link.id);
+                              } else if (e.key === "Escape") {
+                                setEditingSocialId(null);
+                                setEditingUrl("");
+                              }
+                            }}
+                            className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs"
+                            placeholder="https://..."
+                            disabled={savingField === `edit-${link.id}`}
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleUpdateSocialLink(link.id)}
+                            disabled={savingField === `edit-${link.id}`}
+                            className="text-xs text-blue-600 font-medium"
+                          >
+                            {savingField === `edit-${link.id}` ? "..." : "OK"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          className="text-xs text-gray-500 truncate"
+                          onClick={() => {
+                            setEditingSocialId(link.id);
+                            setEditingUrl(link.url);
+                          }}
+                        >
+                          {link.url}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={link.is_active}
+                        onChange={() =>
+                          handleToggleSocialLink(link.id, link.is_active)
+                        }
+                        label=""
+                      />
+                      <button
+                        onClick={() => handleDeleteSocialLink(link.id)}
+                        className="text-xs text-red-500 p-1"
+                      >
+                        X
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 플랫폼 선택 그리드 */}
+            {availablePlatforms.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-500 mb-2">
+                  추가할 SNS 선택{" "}
+                  {!canAddMoreSocial && (
+                    <span className="text-red-500">(MAX)</span>
+                  )}
+                </p>
+                <div className="grid grid-cols-5 gap-2">
+                  {availablePlatforms.map((platform) => {
+                    const isSelected = selectedPlatforms.some(
+                      (p) => p.platform === platform.id
+                    );
+                    const isDisabled = !isSelected && !canAddMoreSocial;
+                    return (
+                      <button
+                        key={platform.id}
+                        onClick={() => handleTogglePlatform(platform.id)}
+                        disabled={isDisabled}
+                        className={`flex flex-col items-center gap-1 rounded-lg border p-2 transition-all ${
+                          isSelected
+                            ? "border-blue-500 bg-blue-50"
+                            : isDisabled
+                              ? "border-gray-100 bg-gray-50 opacity-40"
+                              : "border-gray-200 bg-white"
+                        }`}
+                      >
+                        <SocialPlatformIcon
+                          platform={platform.id}
+                          size="sm"
+                          showBackground
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 선택된 플랫폼 URL 입력 */}
+            {selectedPlatforms.length > 0 && (
+              <div className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs font-medium text-blue-700">
+                  URL 입력 ({selectedPlatforms.length}개 선택)
+                </p>
+                {selectedPlatforms.map((selected) => {
+                  const isSavingThis =
+                    savingField === `social-${selected.platform}`;
+                  return (
+                    <div
+                      key={selected.platform}
+                      className="flex items-center gap-2"
+                    >
+                      <SocialPlatformIcon
+                        platform={selected.platform}
+                        size="sm"
+                        showBackground
+                      />
+                      <input
+                        type="url"
+                        value={selected.url}
+                        onChange={(e) =>
+                          handleUpdateSelectedUrl(
+                            selected.platform,
+                            e.target.value
+                          )
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSaveSocialLink(selected);
+                          }
+                        }}
+                        placeholder={`https://${selected.platform}.com/...`}
+                        className="flex-1 rounded border border-blue-300 bg-white px-2 py-1.5 text-sm"
+                        disabled={isSavingThis}
+                      />
+                      {isSavingThis ? (
+                        <span className="text-xs text-blue-500">...</span>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleTogglePlatform(selected.platform)
+                          }
+                          className="text-xs text-red-500 p-1"
+                        >
+                          X
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 링크 관리 카드 - 모바일 */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
+            <CardTitle className="text-sm">
+              링크 ({links.length}/{MAX_LINKS})
+            </CardTitle>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              disabled={links.length >= MAX_LINKS}
+              className={`rounded px-3 py-1.5 text-xs text-white ${
+                links.length >= MAX_LINKS
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-primary hover:bg-primary/90"
+              }`}
+            >
+              + 추가
+            </button>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            {links.length === 0 ? (
+              <div className="py-6 text-center">
+                <p className="text-gray-600 text-sm">아직 링크가 없습니다</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  &quot;+ 추가&quot; 버튼을 클릭해서 시작하세요
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {links.map((link) => (
+                  <LinkItem key={link.id} link={link} />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 플로팅 미리보기 버튼 */}
+        <button
+          onClick={() => setIsPreviewModalOpen(true)}
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-white shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+            />
+          </svg>
+          <span className="text-sm font-medium">미리보기</span>
+        </button>
+
+        {/* 링크 추가 모달 */}
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          title="새 링크 추가"
+        >
+          <div className="space-y-4">
+            <Input
+              label="제목"
+              value={newLink.title}
+              onChange={(e) =>
+                setNewLink((prev) => ({ ...prev, title: e.target.value }))
+              }
+              error={formErrors.title}
+              placeholder="My awesome link"
+            />
+            <Input
+              label="URL"
+              value={newLink.url}
+              onChange={(e) =>
+                setNewLink((prev) => ({ ...prev, url: e.target.value }))
+              }
+              error={formErrors.url}
+              placeholder="https://example.com"
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                onClick={handleCreateLink}
+                disabled={isLoading}
+                className="flex-1"
+              >
+                {isLoading ? "..." : "추가"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleCloseModal}
+                className="flex-1"
+              >
+                취소
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* 모바일 미리보기 오버레이 */}
+        {isPreviewModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* 흐림 배경 */}
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              onClick={() => setIsPreviewModalOpen(false)}
+            />
+
+            {/* 미리보기 컨텐츠 */}
+            <div className="relative z-10">
+              <LinkPreview
+                profile={previewProfile}
+                links={previewLinks}
+                socialLinks={previewSocialLinks}
+              />
+            </div>
+
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setIsPreviewModalOpen(false)}
+              className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* 이미지 크롭 모달 */}
+        {selectedImageSrc && (
+          <ImageCropModal
+            isOpen={isCropModalOpen}
+            onClose={handleCloseCropModal}
+            imageSrc={selectedImageSrc}
+            onCropComplete={handleCroppedImageUpload}
+            aspectRatio={1}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // ========== 데스크톱 레이아웃 ==========
   return (
     <div className="flex gap-4">
       {/* 왼쪽: 설정 영역 */}
@@ -412,7 +935,7 @@ export default function LinksPage() {
                     <input
                       type="file"
                       ref={fileInputRef}
-                      onChange={handleImageUpload}
+                      onChange={handleFileSelect}
                       accept="image/*"
                       className="hidden"
                     />
@@ -426,9 +949,16 @@ export default function LinksPage() {
                         ? "Uploading..."
                         : "Upload Photo"}
                     </Button>
-                    <p className="mt-1 text-[10px] text-gray-500">
-                      JPG, PNG, GIF (max 5MB)
-                    </p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <p className="text-[10px] text-gray-500">
+                        JPG, PNG, GIF (max 5MB)
+                      </p>
+                      {imageUploadComplete && (
+                        <span className="text-[10px] text-green-600 font-medium">
+                          Upload Complete!
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -810,6 +1340,17 @@ export default function LinksPage() {
           </div>
         </div>
       </Modal>
+
+      {/* 이미지 크롭 모달 */}
+      {selectedImageSrc && (
+        <ImageCropModal
+          isOpen={isCropModalOpen}
+          onClose={handleCloseCropModal}
+          imageSrc={selectedImageSrc}
+          onCropComplete={handleCroppedImageUpload}
+          aspectRatio={1}
+        />
+      )}
     </div>
   );
 }

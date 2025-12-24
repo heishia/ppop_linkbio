@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import analyticsApi, { AnalyticsSummary } from "@/lib/api/analytics";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 export default function AnalyticsPage() {
+  const isMobile = useIsMobile();
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,141 @@ export default function AnalyticsPage() {
   // 차트의 최대값 계산
   const maxDailyClicks = Math.max(...daily_clicks.map((d) => d.clicks), 1);
 
+  // ========== 모바일 레이아웃 ==========
+  if (isMobile) {
+    return (
+      <div className="px-4 py-3 space-y-4 pb-20">
+        {/* 페이지 헤더 */}
+        <div>
+          <p className="text-sm text-gray-600">
+            링크 클릭 통계를 확인하세요
+          </p>
+        </div>
+
+        {/* 개요 카드 - 2x2 그리드 */}
+        <div className="grid grid-cols-2 gap-3">
+          <MobileStatCard
+            title="전체 클릭"
+            value={overview.total_clicks}
+            subtitle="누적"
+            color="blue"
+          />
+          <MobileStatCard
+            title="오늘"
+            value={overview.today_clicks}
+            subtitle="today"
+            color="green"
+          />
+          <MobileStatCard
+            title="이번 주"
+            value={overview.week_clicks}
+            subtitle="최근 7일"
+            color="purple"
+          />
+          <MobileStatCard
+            title="이번 달"
+            value={overview.month_clicks}
+            subtitle="최근 30일"
+            color="orange"
+          />
+        </div>
+
+        {/* 일별 클릭 차트 */}
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm">일별 클릭 추이</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="h-32">
+              <div className="flex h-full items-end gap-0.5">
+                {daily_clicks.map((day, index) => {
+                  const height =
+                    maxDailyClicks > 0 ? (day.clicks / maxDailyClicks) * 100 : 0;
+                  const isToday = index === daily_clicks.length - 1;
+                  return (
+                    <div
+                      key={day.date}
+                      className="relative flex-1"
+                      title={`${day.date}: ${day.clicks} clicks`}
+                    >
+                      <div
+                        className={`w-full rounded-t transition-all ${
+                          isToday ? "bg-primary" : "bg-primary/40"
+                        }`}
+                        style={{ height: `${Math.max(height, 2)}%` }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex justify-between text-[10px] text-gray-500">
+                <span>30일 전</span>
+                <span>오늘</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 링크별 통계 */}
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm">링크별 클릭</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            {link_stats.length === 0 ? (
+              <div className="py-6 text-center text-gray-500">
+                <p className="text-sm">아직 링크가 없습니다</p>
+                <p className="mt-1 text-xs">링크를 추가하고 통계를 확인하세요</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {link_stats.map((link) => {
+                  const maxClicks = Math.max(...link_stats.map((l) => l.click_count), 1);
+                  const percentage = (link.click_count / maxClicks) * 100;
+                  return (
+                    <div key={link.link_id} className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="truncate text-sm font-medium text-gray-900">
+                            {link.title}
+                          </h4>
+                          <p className="truncate text-xs text-gray-500">{link.url}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-lg font-bold text-gray-900">{link.click_count}</p>
+                        </div>
+                      </div>
+                      {/* 프로그레스 바 */}
+                      <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      {/* 기간별 통계 */}
+                      <div className="flex gap-3 text-[10px] text-gray-500">
+                        <span>
+                          today: <span className="font-medium text-gray-700">{link.today_clicks}</span>
+                        </span>
+                        <span>
+                          week: <span className="font-medium text-gray-700">{link.week_clicks}</span>
+                        </span>
+                        <span>
+                          month: <span className="font-medium text-gray-700">{link.month_clicks}</span>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // ========== 데스크톱 레이아웃 ==========
   return (
     <div className="space-y-6">
       <div>
@@ -211,7 +348,7 @@ export default function AnalyticsPage() {
   );
 }
 
-// 통계 카드 컴포넌트
+// 통계 카드 컴포넌트 (데스크톱)
 function StatCard({
   title,
   value,
@@ -246,6 +383,43 @@ function StatCard({
         {value.toLocaleString()}
       </p>
       <p className="mt-1 text-xs opacity-75">{subtitle}</p>
+    </div>
+  );
+}
+
+// 통계 카드 컴포넌트 (모바일 - 더 컴팩트)
+function MobileStatCard({
+  title,
+  value,
+  subtitle,
+  color,
+}: {
+  title: string;
+  value: number;
+  subtitle: string;
+  color: "blue" | "green" | "purple" | "orange";
+}) {
+  const colorClasses = {
+    blue: "bg-blue-50 border-blue-200 text-blue-600",
+    green: "bg-green-50 border-green-200 text-green-600",
+    purple: "bg-purple-50 border-purple-200 text-purple-600",
+    orange: "bg-orange-50 border-orange-200 text-orange-600",
+  };
+
+  const valueColorClasses = {
+    blue: "text-blue-700",
+    green: "text-green-700",
+    purple: "text-purple-700",
+    orange: "text-orange-700",
+  };
+
+  return (
+    <div className={`rounded-xl border p-3 ${colorClasses[color]}`}>
+      <p className="text-xs font-medium">{title}</p>
+      <p className={`mt-0.5 text-2xl font-bold ${valueColorClasses[color]}`}>
+        {value.toLocaleString()}
+      </p>
+      <p className="mt-0.5 text-[10px] opacity-75">{subtitle}</p>
     </div>
   );
 }
