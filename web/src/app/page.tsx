@@ -2,39 +2,77 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Link2, Sparkles, BarChart3 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
 export default function Home() {
-  const { isAuthenticated, checkAuth } = useAuthStore();
+  const { isAuthenticated, loadUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   // 로그인 상태 확인
   useEffect(() => {
     const init = async () => {
-      await checkAuth();
+      await loadUser();
       setIsLoading(false);
     };
     init();
-  }, [checkAuth]);
+  }, [loadUser]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="px-4 py-16 sm:py-32">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-6xl font-heading">
-            모든 것을 위한{" "}
-            <span className="block sm:inline text-primary">하나의 링크</span>
-          </h1>
-          <p className="mt-4 sm:mt-6 text-sm sm:text-2xl text-gray-600">
-            하나의 링크에 여러 링크들을 예쁘게 넣어보세요!
-          </p>
-          <p className="mt-2 sm:mt-3 text-xs sm:text-xl text-primary font-semibold">
-            간단하고 예쁜 링크바이오 뽑링크
-          </p>
-          <div className="mt-8 sm:mt-10 flex flex-col items-center gap-3 sm:gap-4 sm:flex-row sm:justify-center">
+      <section className="px-4 py-12 sm:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <h1 className="text-3xl font-extrabold text-gray-900 sm:text-6xl font-heading">
+              모든 것을 위한{" "}
+              <span className="block sm:inline text-primary">하나의 링크</span>
+            </h1>
+            <p className="mt-4 sm:mt-6 text-sm sm:text-2xl text-gray-600">
+              하나의 링크에 여러 링크들을 예쁘게 넣어보세요!
+            </p>
+            <p className="mt-2 sm:mt-3 text-xs sm:text-xl text-primary font-semibold">
+              간단하고 예쁜 링크바이오 뽑링크
+            </p>
+          </div>
+
+          {/* 휴대폰 목업 섹션 */}
+          <div className="mt-10 sm:mt-16 flex justify-center">
+            <div className="phone-mockup">
+              {/* 휴대폰 프레임 */}
+              <div className="relative mx-auto w-[280px] sm:w-[320px] h-[580px] sm:h-[660px] bg-gray-900 rounded-[45px] sm:rounded-[55px] p-2 sm:p-3 shadow-2xl">
+                {/* 상단 노치/다이나믹 아일랜드 */}
+                <div className="absolute top-4 sm:top-5 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-6 sm:h-7 bg-black rounded-full z-20" />
+                
+                {/* 전원 버튼 */}
+                <div className="absolute -right-1 top-28 w-1 h-12 bg-gray-700 rounded-r-lg" />
+                
+                {/* 볼륨 버튼 */}
+                <div className="absolute -left-1 top-24 w-1 h-8 bg-gray-700 rounded-l-lg" />
+                <div className="absolute -left-1 top-36 w-1 h-8 bg-gray-700 rounded-l-lg" />
+                
+                {/* 스크린 영역 */}
+                <div className="w-full h-full rounded-[38px] sm:rounded-[48px] overflow-hidden">
+                  <Image
+                    src="/screenshot.png"
+                    alt="PPOPLINK preview"
+                    width={320}
+                    height={660}
+                    className="w-full h-full object-cover object-top"
+                    priority
+                  />
+                </div>
+              </div>
+              
+              {/* 그림자 효과 */}
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[200px] sm:w-[250px] h-4 bg-gray-900/20 blur-xl rounded-full" />
+            </div>
+          </div>
+
+          {/* CTA 버튼 */}
+          <div className="mt-10 sm:mt-14 flex flex-col items-center gap-3 sm:gap-4 sm:flex-row sm:justify-center">
             {isLoading ? (
               // 로딩 중에는 버튼 숨김 (깜빡임 방지)
               <div className="h-10 sm:h-12" />

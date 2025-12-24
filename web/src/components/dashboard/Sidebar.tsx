@@ -49,15 +49,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="border-t border-gray-200 p-4">
-        <Link
-          href="/dashboard"
-          className="block rounded-lg bg-gray-100 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-        >
-          프로필 보기
-        </Link>
-      </div>
     </aside>
   );
 }

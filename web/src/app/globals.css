@@ -67,3 +67,33 @@ label {
   }
 }
 
+/* 휴대폰 목업 스타일 */
+.phone-mockup {
+  position: relative;
+  transform: perspective(1000px) rotateY(-5deg) rotateX(2deg);
+  transition: transform 0.3s ease;
+}
+
+.phone-mockup:hover {
+  transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.02);
+}
+
+/* 휴대폰 프레임 빛 반사 효과 */
+.phone-mockup::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  border-radius: 55px;
+  pointer-events: none;
+  z-index: 10;
+}
+

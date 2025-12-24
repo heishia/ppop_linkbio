@@ -138,6 +138,8 @@ export default function LinksPage() {
     fetchProfile();
   }, [fetchLinks, fetchSocialLinks, fetchProfile]);
 
+  // 프로필 텍스트 필드만 의존성으로 사용 (이미지 업로드 시 formData 리셋 방지)
+  // 이미지 URL 변경은 formData와 무관하므로 해당 필드들만 감시
   useEffect(() => {
     if (profile) {
       const data = {
@@ -148,7 +150,8 @@ export default function LinksPage() {
       setFormData(data);
       setOriginalFormData(data);
     }
-  }, [profile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.display_name, profile?.bio, profile?.background_color]);
 
   // 공개 프로필 URL 설정 (클라이언트에서만, public_link_id 기반)
   useEffect(() => {
