@@ -3,7 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 
 export function Header() {
@@ -15,48 +14,32 @@ export function Header() {
     router.push("/login");
   };
 
-  const handleViewProfile = () => {
-    if (user?.username) {
-      window.open(`/${user.username}`, "_blank");
-    }
-  };
-
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
+    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4">
       <div>
-        <h1 className="text-lg font-semibold text-gray-900">대시보드</h1>
+        <h1 className="text-base font-semibold text-gray-900">Dashboard</h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Button
-          variant="secondary"
-          onClick={handleViewProfile}
-          className="text-sm"
-        >
-          프로필 공유
-        </Button>
+      <div className="flex items-center gap-3">
+        {/* 프로필 사진 (동그라미) */}
+        <Avatar
+          src={user?.profile_image_url || "/avatar-placeholder.jpg"}
+          alt={user?.username || "User"}
+          size={32}
+        />
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-sm font-medium text-gray-900">
-              {user?.display_name || user?.username}
-            </p>
-            <p className="text-xs text-gray-500">@{user?.username}</p>
-          </div>
-          <Avatar
-            src={user?.profile_image_url || "/avatar-placeholder.jpg"}
-            alt={user?.username || "User"}
-            className="h-10 w-10"
-          />
-        </div>
+        {/* 유저 이름 (1줄로 표시) */}
+        <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">
+          {user?.display_name || user?.username || "User"}
+        </span>
 
-        <Button
-          variant="tertiary"
+        {/* 로그아웃 버튼 */}
+        <button
           onClick={handleLogout}
-          className="text-sm"
+          className="text-xs px-3 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors flex-shrink-0"
         >
-          로그아웃
-        </Button>
+          Logout
+        </button>
       </div>
     </header>
   );

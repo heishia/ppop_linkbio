@@ -7,22 +7,20 @@ import { cn } from "@/lib/utils";
 interface AvatarProps {
   src: string;
   alt: string;
+  size?: number;
   className?: string;
 }
 
-export function Avatar({ src, alt, className }: AvatarProps) {
+export function Avatar({ src, alt, size = 120, className }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
-
-  // Extract size from className or use default
-  const sizeMatch = className?.match(/[hw]-\[?(\d+)(?:px)?\]?/);
-  const size = sizeMatch ? sizeMatch[1] : "120";
 
   return (
     <div
       className={cn(
-        "relative h-[120px] w-[120px] overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-primary/40",
+        "relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex-shrink-0",
         className
       )}
+      style={{ width: size, height: size }}
     >
       {!imageError ? (
         <Image
@@ -35,7 +33,10 @@ export function Avatar({ src, alt, className }: AvatarProps) {
           onError={() => setImageError(true)}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-2xl font-extrabold text-primary">
+        <div 
+          className="flex h-full w-full items-center justify-center font-extrabold text-primary"
+          style={{ fontSize: size * 0.4 }}
+        >
           {alt.charAt(0).toUpperCase()}
         </div>
       )}

@@ -104,7 +104,12 @@ const LinkedInIcon = () => (
 
 const NaverBlogIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z" />
+    {/* 네이버 블로그 말풍선 아이콘 - 둥근 모서리 + 아래쪽 삼각형 꼬리 */}
+    <path d="M4 1C2.34 1 1 2.34 1 4V14C1 15.66 2.34 17 4 17H9.17L12 19.83L14.83 17H20C21.66 17 23 15.66 23 14V4C23 2.34 21.66 1 20 1H4Z" />
+    {/* 가로선 3개 - 텍스트 표현 */}
+    <rect x="5" y="5" width="14" height="2" rx="1" fill="white"/>
+    <rect x="5" y="9" width="10" height="2" rx="1" fill="white"/>
+    <rect x="5" y="13" width="12" height="2" rx="1" fill="white"/>
   </svg>
 );
 
