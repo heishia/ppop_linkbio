@@ -29,7 +29,7 @@ export function MobileHeader() {
         <div className="w-8" />
 
         {/* 가운데: 로고 */}
-        <Link href="/dashboard/links" className="text-lg font-extrabold text-primary">
+        <Link href="/" className="text-lg font-extrabold text-primary">
           PPOPLINK
         </Link>
 

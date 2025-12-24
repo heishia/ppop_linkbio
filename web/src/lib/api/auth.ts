@@ -23,6 +23,8 @@ export interface AuthResponse {
 
 export interface User {
   id: string;
+  user_seq: number | null;              // 순차 번호 (링크 ID 생성용)
+  public_link_id: string | null;        // 암호화된 공개 링크 ID
   username: string;
   email: string;
   display_name: string | null;

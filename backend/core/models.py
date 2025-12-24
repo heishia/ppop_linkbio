@@ -57,6 +57,8 @@ class UserUpdate(BaseModel):
 
 class User(UserBase, TimestampMixin):
     id: UUID
+    user_seq: Optional[int] = None                # 순차 번호 (링크 ID 생성용)
+    public_link_id: Optional[str] = None          # 암호화된 공개 링크 ID
     profile_image_url: Optional[str] = None
     background_image_url: Optional[str] = None
     background_color: Optional[str] = None
@@ -147,6 +149,7 @@ class SocialLink(SocialLinkBase, TimestampMixin):
 
 # Public Profile Response
 class PublicProfile(BaseModel):
+    public_link_id: str                           # 암호화된 공개 링크 ID
     username: str
     display_name: Optional[str] = None
     bio: Optional[str] = None

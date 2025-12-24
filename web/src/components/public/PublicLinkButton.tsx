@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/Button";
 
 interface PublicLinkButtonProps {
   link: Link;
-  username: string;
+  publicLinkId: string;
 }
 
-export function PublicLinkButton({ link, username }: PublicLinkButtonProps) {
+export function PublicLinkButton({ link, publicLinkId }: PublicLinkButtonProps) {
   const handleClick = async () => {
     try {
-      // Record click
-      await publicApi.recordClick(username, link.id);
+      // Record click using public_link_id
+      await publicApi.recordClick(publicLinkId, link.id);
       // Redirect to URL
       window.open(link.url, "_blank", "noopener,noreferrer");
     } catch (error) {

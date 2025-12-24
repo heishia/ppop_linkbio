@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="text-3xl font-extrabold text-primary">
@@ -17,9 +17,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-lg">
-          <LoginForm />
-        </div>
+        <LoginForm />
       </div>
     </div>
   );

@@ -122,6 +122,8 @@ class ProfileService:
     def _map_to_user(self, data: dict) -> User:
         return User(
             id=data["id"],
+            user_seq=data.get("user_seq"),
+            public_link_id=data.get("public_link_id"),
             username=data["username"],
             email=data["email"],
             display_name=data.get("display_name"),

@@ -24,7 +24,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
       <div className="flex h-14 items-center border-b border-gray-200 px-6">
-        <Link href="/dashboard" className="text-xl font-extrabold text-primary">
+        <Link href="/" className="text-xl font-extrabold text-primary">
           PPOPLINK
         </Link>
       </div>

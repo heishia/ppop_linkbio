@@ -5,6 +5,7 @@ import { Link, SocialLink } from "./links";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8005";
 
 export interface PublicProfile {
+  public_link_id: string;               // 암호화된 공개 링크 ID
   username: string;
   display_name: string | null;
   bio: string | null;
@@ -17,16 +18,25 @@ export interface PublicProfile {
 }
 
 export const publicApi = {
-  getPublicProfile: async (username: string): Promise<{ data: PublicProfile }> => {
+  /**
+   * 공개 링크 ID로 프로필 조회
+   * @param linkId 암호화된 공개 링크 ID (예: Ab3x2Kq9)
+   */
+  getPublicProfile: async (linkId: string): Promise<{ data: PublicProfile }> => {
     // Use axios directly for SSR (no auth needed for public profiles)
     const response = await axios.get<{ data: PublicProfile }>(
-      `${API_URL}/api/public/${username}`
+      `${API_URL}/api/public/${linkId}`
     );
     return response.data;
   },
 
-  recordClick: async (username: string, linkId: string): Promise<void> => {
-    await apiClient.post(`/api/public/${username}/click/${linkId}`);
+  /**
+   * 링크 클릭 기록
+   * @param publicLinkId 암호화된 공개 링크 ID
+   * @param linkId 클릭된 링크의 UUID
+   */
+  recordClick: async (publicLinkId: string, linkId: string): Promise<void> => {
+    await apiClient.post(`/api/public/${publicLinkId}/click/${linkId}`);
   },
 };
 

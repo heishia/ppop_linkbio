@@ -51,7 +51,7 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
         {/* Links */}
         <section className="flex flex-col gap-4 py-6 pb-16">
           {activeLinks.map((link) => (
-            <PublicLinkButton key={link.id} link={link} username={profile.username} />
+            <PublicLinkButton key={link.id} link={link} publicLinkId={profile.public_link_id} />
           ))}
         </section>
       </MobileContainer>
@@ -62,7 +62,7 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="pointer-events-auto text-lg font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
+          className="pointer-events-auto text-2xl sm:text-3xl font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
         >
           PPOPLINK
         </a>

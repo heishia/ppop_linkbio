@@ -4,17 +4,16 @@ import { PublicProfileClient } from "@/components/public/PublicProfileClient";
 
 interface PageProps {
   params: {
-    username: string;
+    linkId: string;
   };
 }
 
 export default async function PublicProfilePage({ params }: PageProps) {
-  const username = params.username.startsWith("@")
-    ? params.username.slice(1)
-    : params.username;
+  // 공개 링크 ID로 프로필 조회
+  const linkId = params.linkId;
 
   try {
-    const { data: profile } = await publicApi.getPublicProfile(username);
+    const { data: profile } = await publicApi.getPublicProfile(linkId);
 
     return <PublicProfileClient profile={profile} />;
   } catch (error: any) {
@@ -26,12 +25,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const username = params.username.startsWith("@")
-    ? params.username.slice(1)
-    : params.username;
+  const linkId = params.linkId;
 
   try {
-    const { data: profile } = await publicApi.getPublicProfile(username);
+    const { data: profile } = await publicApi.getPublicProfile(linkId);
 
     return {
       title: `${profile.display_name || profile.username} | PPOPLINK`,
@@ -50,3 +47,4 @@ export async function generateMetadata({ params }: PageProps) {
     };
   }
 }
+

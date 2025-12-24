@@ -7,6 +7,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_seq SERIAL,                              -- 순차 번호 (자동 증가, 링크 ID 생성용)
+    public_link_id VARCHAR(20) UNIQUE,            -- 암호화된 공개 링크 ID
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -63,6 +65,8 @@ CREATE TABLE IF NOT EXISTS social_links (
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
+CREATE INDEX IF NOT EXISTS idx_users_public_link_id ON users(public_link_id);
+CREATE INDEX IF NOT EXISTS idx_users_user_seq ON users(user_seq);
 CREATE INDEX IF NOT EXISTS idx_user_plans_user_id ON user_plans(user_id);
 CREATE INDEX IF NOT EXISTS idx_links_user_id ON links(user_id);
 CREATE INDEX IF NOT EXISTS idx_links_display_order ON links(user_id, display_order);

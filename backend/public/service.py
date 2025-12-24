@@ -20,10 +20,16 @@ class PublicService:
     TABLE_LINKS = "links"
     TABLE_SOCIAL_LINKS = "social_links"
     
-    async def get_public_profile(self, username: str) -> PublicProfile:
-        # 사용자 조회
+    async def get_public_profile(self, link_id: str) -> PublicProfile:
+        """
+        공개 링크 ID로 프로필 조회
+        
+        Args:
+            link_id: 암호화된 공개 링크 ID
+        """
+        # public_link_id로 사용자 조회
         user_result = db.table(self.TABLE_USERS).select("*").eq(
-            "username", username
+            "public_link_id", link_id
         ).eq("is_active", True).execute()
         
         if not user_result.data:
@@ -39,6 +45,7 @@ class PublicService:
         social_links = await self._get_active_social_links(user_id)
         
         return PublicProfile(
+            public_link_id=user_data["public_link_id"],
             username=user_data["username"],
             display_name=user_data.get("display_name"),
             bio=user_data.get("bio"),
@@ -52,14 +59,23 @@ class PublicService:
     
     async def record_click(
         self, 
-        username: str, 
+        public_link_id: str, 
         link_id: UUID, 
         user_agent: str = None, 
         ip_address: str = None
     ) -> None:
-        # 사용자 확인
+        """
+        링크 클릭 기록
+        
+        Args:
+            public_link_id: 암호화된 공개 링크 ID
+            link_id: 클릭된 링크의 UUID
+            user_agent: 클라이언트 User-Agent
+            ip_address: 클라이언트 IP 주소
+        """
+        # 사용자 확인 (public_link_id로 조회)
         user_result = db.table(self.TABLE_USERS).select("id").eq(
-            "username", username
+            "public_link_id", public_link_id
         ).execute()
         
         if not user_result.data:
@@ -71,7 +87,7 @@ class PublicService:
         # 상세 클릭 이벤트 기록 (analytics 테이블)
         await analytics_service.record_click_event(link_id, user_agent, ip_address)
         
-        logger.info(f"Click recorded: username={username}, link_id={link_id}")
+        logger.info(f"Click recorded: public_link_id={public_link_id}, link_id={link_id}")
     
     async def _get_active_links(self, user_id: str) -> List[Link]:
         result = db.table(self.TABLE_LINKS).select("*").eq(

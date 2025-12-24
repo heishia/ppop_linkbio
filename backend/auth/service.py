@@ -23,6 +23,7 @@ from backend.core.security import (
     verify_refresh_token
 )
 from backend.auth.schemas import RegisterRequest
+from backend.utils.linkid_utils import encode_user_seq
 
 logger = get_logger(__name__)
 
@@ -55,6 +56,16 @@ class AuthService:
         if not result.data:
             raise DatabaseError(detail="Failed to create user")
         
+        # DB에서 자동 생성된 user_seq를 사용하여 public_link_id 생성
+        user_seq = result.data[0].get("user_seq")
+        if user_seq:
+            public_link_id = encode_user_seq(user_seq)
+            # public_link_id 업데이트
+            db.table(self.TABLE_USERS).update(
+                {"public_link_id": public_link_id}
+            ).eq("id", str(user_id)).execute()
+            result.data[0]["public_link_id"] = public_link_id
+        
         # 무료 플랜 생성
         plan_data = {
             "id": str(uuid4()),
@@ -72,7 +83,7 @@ class AuthService:
             refresh_token=refresh_token
         )
         
-        logger.info(f"User registered: {user.username}")
+        logger.info(f"User registered: {user.username}, public_link_id: {user.public_link_id}")
         return user, token
     
     async def login(self, email: str, password: str) -> tuple[User, Token]:
@@ -138,6 +149,8 @@ class AuthService:
     def _map_to_user(self, data: dict) -> User:
         return User(
             id=data["id"],
+            user_seq=data.get("user_seq"),
+            public_link_id=data.get("public_link_id"),
             username=data["username"],
             email=data["email"],
             display_name=data.get("display_name"),
@@ -155,6 +168,8 @@ class AuthService:
     def _map_to_user_in_db(self, data: dict) -> UserInDB:
         return UserInDB(
             id=data["id"],
+            user_seq=data.get("user_seq"),
+            public_link_id=data.get("public_link_id"),
             username=data["username"],
             email=data["email"],
             password_hash=data["password_hash"],
