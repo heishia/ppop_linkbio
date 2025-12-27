@@ -28,7 +28,7 @@ export function MainHeader() {
   }, [loadUser]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-50 w-full bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* 로고 - 왼쪽 */}
         <Link href="/" className="flex items-center">
@@ -44,7 +44,7 @@ export function MainHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
+                  "text-base font-heading font-normal transition-colors hover:text-primary",
                   isActive ? "text-primary" : "text-gray-700"
                 )}
               >
@@ -81,7 +81,7 @@ export function MainHeader() {
       </div>
 
       {/* 모바일 메뉴 */}
-      <div className="border-t border-gray-200 bg-white md:hidden">
+      <div className="bg-white md:hidden">
         <nav className="flex items-center justify-around px-4 py-2">
           {categoryMenuItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -90,7 +90,7 @@ export function MainHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-xs font-medium px-2 py-1 transition-colors",
+                  "text-sm font-heading font-normal px-2 py-1 transition-colors",
                   isActive ? "text-primary" : "text-gray-700"
                 )}
               >
