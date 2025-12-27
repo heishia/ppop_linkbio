@@ -12,8 +12,15 @@ from unittest.mock import MagicMock, patch
 os.environ["SUPABASE_URL"] = "https://test.supabase.co"
 os.environ["SUPABASE_KEY"] = "test-key"
 os.environ["SUPABASE_SERVICE_KEY"] = "test-service-key"
-os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only"
 os.environ["DEBUG"] = "true"
+
+# PPOP Auth test environment variables
+os.environ["PPOP_AUTH_API_URL"] = "https://test-auth-api.example.com"
+os.environ["PPOP_AUTH_CLIENT_URL"] = "https://test-auth.example.com"
+os.environ["PPOP_AUTH_CLIENT_ID"] = "test-client-id"
+os.environ["PPOP_AUTH_CLIENT_SECRET"] = "test-client-secret"
+os.environ["PPOP_AUTH_REDIRECT_URI"] = "http://localhost:3000/auth/callback"
+os.environ["PPOP_AUTH_JWKS_URI"] = "https://test-auth-api.example.com/.well-known/jwks.json"
 
 
 @pytest.fixture(scope="session")
@@ -61,15 +68,18 @@ def sample_user_data():
     """Sample user data for testing"""
     return {
         "id": "123e4567-e89b-12d3-a456-426614174000",
+        "user_seq": 1,
+        "public_link_id": "abc123",
         "username": "testuser",
         "email": "test@example.com",
-        "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.sC",
+        "password_hash": None,  # PPOP Auth users don't have password
         "display_name": "Test User",
         "bio": "Test bio",
         "profile_image_url": None,
         "background_image_url": None,
         "background_color": "#ffffff",
         "theme": "default",
+        "button_style": "default",
         "is_active": True,
         "is_admin": False,
         "created_at": "2024-01-01T00:00:00",
@@ -94,12 +104,22 @@ def sample_link_data():
 
 @pytest.fixture
 def auth_headers():
-    """Generate valid auth headers for testing"""
-    from backend.core.security import create_tokens
-    from uuid import UUID
-    
-    user_id = UUID("123e4567-e89b-12d3-a456-426614174000")
-    access_token, _ = create_tokens(user_id)
-    
-    return {"Authorization": f"Bearer {access_token}"}
+    """
+    Generate mock auth headers for testing
+    Note: In real tests with PPOP Auth, you would need to mock the JWKS verification
+    """
+    # This is a placeholder token for testing
+    # Real integration tests would need to mock verify_access_token
+    return {"Authorization": "Bearer mock_test_token"}
 
+
+@pytest.fixture
+def mock_ppop_auth():
+    """Mock PPOP Auth token verification"""
+    with patch("backend.core.security.verify_ppop_token") as mock:
+        mock.return_value = {
+            "sub": "123e4567-e89b-12d3-a456-426614174000",
+            "email": "test@example.com",
+            "type": "access"
+        }
+        yield mock

@@ -1,17 +1,11 @@
 """
-Unit tests for authentication service
+Unit tests for PPOP Auth authentication service
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 from uuid import UUID
 from backend.auth.service import AuthService
-from backend.auth.schemas import RegisterRequest
-from backend.core.exceptions import (
-    UsernameAlreadyExistsError,
-    EmailAlreadyExistsError,
-    InvalidCredentialsError,
-)
 
 
 @pytest.mark.unit
@@ -23,49 +17,27 @@ class TestAuthService:
         """Create AuthService instance"""
         return AuthService()
     
-    @pytest.mark.asyncio
-    async def test_check_username_exists_raises_error_when_exists(
-        self, auth_service, mock_db
-    ):
-        """Test that checking existing username raises error"""
-        mock_db.table().select().eq().execute.return_value.data = [{"id": "123"}]
+    def test_generate_oauth_state(self, auth_service):
+        """Test OAuth state generation"""
+        state1 = auth_service.generate_oauth_state()
+        state2 = auth_service.generate_oauth_state()
         
-        with patch("server.auth.service.db", mock_db):
-            with pytest.raises(UsernameAlreadyExistsError):
-                await auth_service._check_username_exists("existing_user")
+        # States should be unique
+        assert state1 != state2
+        # States should be non-empty strings
+        assert len(state1) > 0
+        assert len(state2) > 0
     
-    @pytest.mark.asyncio
-    async def test_check_username_exists_passes_when_not_exists(
-        self, auth_service, mock_db
-    ):
-        """Test that checking non-existing username passes"""
-        mock_db.table().select().eq().execute.return_value.data = []
+    def test_get_oauth_login_url(self, auth_service):
+        """Test OAuth login URL generation"""
+        state = "test_state_123"
+        login_url = auth_service.get_oauth_login_url(state)
         
-        with patch("server.auth.service.db", mock_db):
-            # Should not raise exception
-            await auth_service._check_username_exists("new_user")
-    
-    @pytest.mark.asyncio
-    async def test_check_email_exists_raises_error_when_exists(
-        self, auth_service, mock_db
-    ):
-        """Test that checking existing email raises error"""
-        mock_db.table().select().eq().execute.return_value.data = [{"id": "123"}]
-        
-        with patch("server.auth.service.db", mock_db):
-            with pytest.raises(EmailAlreadyExistsError):
-                await auth_service._check_email_exists("existing@example.com")
-    
-    @pytest.mark.asyncio
-    async def test_check_email_exists_passes_when_not_exists(
-        self, auth_service, mock_db
-    ):
-        """Test that checking non-existing email passes"""
-        mock_db.table().select().eq().execute.return_value.data = []
-        
-        with patch("server.auth.service.db", mock_db):
-            # Should not raise exception
-            await auth_service._check_email_exists("new@example.com")
+        # URL should contain required parameters
+        assert "client_id=" in login_url
+        assert "redirect_uri=" in login_url
+        assert "response_type=code" in login_url
+        assert f"state={state}" in login_url
     
     @pytest.mark.asyncio
     async def test_get_user_by_id_returns_user_when_exists(
@@ -74,7 +46,7 @@ class TestAuthService:
         """Test getting user by ID when user exists"""
         mock_db.table().select().eq().execute.return_value.data = [sample_user_data]
         
-        with patch("server.auth.service.db", mock_db):
+        with patch("backend.auth.service.db", mock_db):
             user_id = UUID(sample_user_data["id"])
             user = await auth_service.get_user_by_id(user_id)
             
@@ -89,9 +61,33 @@ class TestAuthService:
         """Test getting user by ID when user doesn't exist"""
         mock_db.table().select().eq().execute.return_value.data = []
         
-        with patch("server.auth.service.db", mock_db):
+        with patch("backend.auth.service.db", mock_db):
             user_id = UUID("123e4567-e89b-12d3-a456-426614174000")
             user = await auth_service.get_user_by_id(user_id)
             
             assert user is None
-
+    
+    @pytest.mark.asyncio
+    async def test_generate_unique_username(self, auth_service, mock_db):
+        """Test unique username generation"""
+        # First call returns no existing user
+        mock_db.table().select().eq().execute.return_value.data = []
+        
+        with patch("backend.auth.service.db", mock_db):
+            username = await auth_service._generate_unique_username("testuser")
+            
+            assert username == "testuser"
+    
+    @pytest.mark.asyncio
+    async def test_generate_unique_username_with_collision(self, auth_service, mock_db):
+        """Test unique username generation when base username exists"""
+        # Mock to return existing user for first call, empty for second
+        mock_db.table().select().eq().execute.side_effect = [
+            MagicMock(data=[{"id": "123"}]),  # First call - username exists
+            MagicMock(data=[]),  # Second call - username_1 available
+        ]
+        
+        with patch("backend.auth.service.db", mock_db):
+            username = await auth_service._generate_unique_username("testuser")
+            
+            assert username == "testuser_1"

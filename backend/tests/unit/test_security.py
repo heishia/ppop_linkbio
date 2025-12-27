@@ -1,92 +1,67 @@
 """
-Unit tests for security utilities
+Unit tests for PPOP Auth security utilities
+PPOP Auth SSO 사용으로 인해 기존 테스트 대체
 """
 
 import pytest
-from uuid import uuid4
 from backend.core.security import (
-    hash_password,
-    verify_password,
-    create_tokens,
     verify_access_token,
-    verify_refresh_token,
+    get_token_payload,
+    extract_token_from_header
 )
 from backend.core.exceptions import InvalidTokenError
 
 
 @pytest.mark.unit
-class TestPasswordHashing:
-    """Test password hashing and verification"""
+class TestTokenExtraction:
+    """Test token extraction from headers"""
     
-    def test_hash_password_returns_different_hash(self):
-        """Test that hashing same password twice produces different hashes"""
-        password = "test_password_123"
-        hash1 = hash_password(password)
-        hash2 = hash_password(password)
+    def test_extract_token_from_valid_header(self):
+        """Test extracting token from valid Bearer header"""
+        token = "some.jwt.token"
+        header = f"Bearer {token}"
         
-        assert hash1 != hash2
-        assert hash1.startswith("$2b$")
+        extracted = extract_token_from_header(header)
+        assert extracted == token
     
-    def test_verify_password_with_correct_password(self):
-        """Test password verification with correct password"""
-        password = "correct_password"
-        password_hash = hash_password(password)
+    def test_extract_token_from_lowercase_bearer(self):
+        """Test extracting token with lowercase bearer"""
+        token = "some.jwt.token"
+        header = f"bearer {token}"
         
-        assert verify_password(password, password_hash) is True
+        extracted = extract_token_from_header(header)
+        assert extracted == token
     
-    def test_verify_password_with_incorrect_password(self):
-        """Test password verification with incorrect password"""
-        password = "correct_password"
-        password_hash = hash_password(password)
-        
-        assert verify_password("wrong_password", password_hash) is False
+    def test_extract_token_from_invalid_header(self):
+        """Test extraction fails with invalid header format"""
+        with pytest.raises(InvalidTokenError):
+            extract_token_from_header("InvalidHeader token")
+    
+    def test_extract_token_from_empty_header(self):
+        """Test extraction fails with empty header"""
+        with pytest.raises(InvalidTokenError):
+            extract_token_from_header("")
+    
+    def test_extract_token_missing_token(self):
+        """Test extraction fails when token is missing"""
+        with pytest.raises(InvalidTokenError):
+            extract_token_from_header("Bearer")
 
 
 @pytest.mark.unit
-class TestJWTTokens:
-    """Test JWT token creation and verification"""
-    
-    def test_create_tokens_returns_two_tokens(self):
-        """Test that create_tokens returns access and refresh tokens"""
-        user_id = uuid4()
-        access_token, refresh_token = create_tokens(user_id)
-        
-        assert isinstance(access_token, str)
-        assert isinstance(refresh_token, str)
-        assert len(access_token) > 0
-        assert len(refresh_token) > 0
-    
-    def test_verify_access_token_with_valid_token(self):
-        """Test access token verification with valid token"""
-        user_id = uuid4()
-        access_token, _ = create_tokens(user_id)
-        
-        verified_user_id = verify_access_token(access_token)
-        assert verified_user_id == user_id
-    
-    def test_verify_refresh_token_with_valid_token(self):
-        """Test refresh token verification with valid token"""
-        user_id = uuid4()
-        _, refresh_token = create_tokens(user_id)
-        
-        verified_user_id = verify_refresh_token(refresh_token)
-        assert verified_user_id == user_id
+class TestTokenVerification:
+    """Test PPOP Auth token verification"""
     
     def test_verify_access_token_with_invalid_token(self):
         """Test access token verification with invalid token"""
         with pytest.raises(InvalidTokenError):
             verify_access_token("invalid.token.here")
     
-    def test_verify_refresh_token_with_invalid_token(self):
-        """Test refresh token verification with invalid token"""
+    def test_get_token_payload_with_invalid_token(self):
+        """Test get_token_payload with invalid token"""
         with pytest.raises(InvalidTokenError):
-            verify_refresh_token("invalid.token.here")
-    
-    def test_verify_access_token_with_refresh_token_fails(self):
-        """Test that using refresh token for access verification fails"""
-        user_id = uuid4()
-        _, refresh_token = create_tokens(user_id)
-        
-        with pytest.raises(InvalidTokenError):
-            verify_access_token(refresh_token)
+            get_token_payload("invalid.token.here")
 
+
+# Note: Full token verification tests require a valid PPOP Auth token
+# which would be tested in integration tests with actual PPOP Auth server
