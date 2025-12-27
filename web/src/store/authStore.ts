@@ -54,12 +54,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authApi.getOAuthLoginURL();
-      
+
       // state를 세션 스토리지에 저장 (CSRF 방지)
       sessionStorage.setItem(OAUTH_STATE_KEY, response.state);
-      
-      // PPOP Auth 로그인 페이지로 리다이렉트
-      window.location.href = response.login_url;
+
+      // PPOP Auth 로그인 페이지로 리다이렉트 (replace로 히스토리 교체)
+      window.location.replace(response.login_url);
     } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to start login. Please try again."),
@@ -75,9 +75,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       // state 검증 (CSRF 방지)
       const savedState = sessionStorage.getItem(OAUTH_STATE_KEY);
       if (savedState && savedState !== data.state) {
-        throw new Error("Invalid state parameter. Please try logging in again.");
+        throw new Error(
+          "Invalid state parameter. Please try logging in again."
+        );
       }
-      
+
       // 인가 코드를 토큰으로 교환
       const response = await authApi.oauthCallback(data);
       const { access_token, refresh_token } = response.data;
@@ -86,7 +88,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // 토큰 저장
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
-      
+
       // state 정리
       sessionStorage.removeItem(OAUTH_STATE_KEY);
 
@@ -98,11 +100,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error: unknown) {
       // state 정리
       sessionStorage.removeItem(OAUTH_STATE_KEY);
-      
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : parseApiError(error, "Login failed. Please try again.");
-      
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : parseApiError(error, "Login failed. Please try again.");
+
       set({
         error: errorMessage,
         isLoading: false,
