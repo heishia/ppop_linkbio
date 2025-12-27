@@ -31,6 +31,7 @@ In Vercel Project Settings → Environment Variables, add:
 **Production:**
 ```
 NEXT_PUBLIC_API_URL=https://api.ppoplink.com
+NEXT_PUBLIC_PPOP_AUTH_CLIENT_ORIGIN=https://auth-client-production-04b4.up.railway.app
 NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn
 SENTRY_ORG=your-sentry-org
 SENTRY_PROJECT=web
@@ -40,6 +41,7 @@ SENTRY_AUTH_TOKEN=your-sentry-auth-token
 **Preview:**
 ```
 NEXT_PUBLIC_API_URL=https://staging-api.ppoplink.com
+NEXT_PUBLIC_PPOP_AUTH_CLIENT_ORIGIN=https://auth-client-staging-xxxx.up.railway.app
 NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn
 SENTRY_ORG=your-sentry-org
 SENTRY_PROJECT=web

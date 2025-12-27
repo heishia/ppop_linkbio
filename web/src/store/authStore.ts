@@ -72,22 +72,31 @@ export const useAuthStore = create<AuthState>((set) => ({
   handleOAuthCallback: async (data: OAuthCallbackData) => {
     set({ isLoading: true, error: null });
     try {
+      console.log("handleOAuthCallback called with:", { code: data.code ? "present" : "missing", state: data.state ? "present" : "missing" });
+      
       // state 검증 (CSRF 방지)
       const savedState = sessionStorage.getItem(OAUTH_STATE_KEY);
+      console.log("Saved state:", savedState ? "present" : "missing", "Received state:", data.state ? "present" : "missing");
+      
       if (savedState && savedState !== data.state) {
+        console.error("State mismatch:", { saved: savedState, received: data.state });
         throw new Error(
           "Invalid state parameter. Please try logging in again."
         );
       }
 
       // 인가 코드를 토큰으로 교환
+      console.log("Calling oauthCallback API...");
       const response = await authApi.oauthCallback(data);
+      console.log("OAuth callback API response received");
+      
       const { access_token, refresh_token } = response.data;
       const { user } = response;
 
       // 토큰 저장
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
+      console.log("Tokens saved, user:", user.username);
 
       // state 정리
       sessionStorage.removeItem(OAUTH_STATE_KEY);
@@ -97,10 +106,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      
+      console.log("OAuth callback completed successfully");
     } catch (error: unknown) {
       // state 정리
       sessionStorage.removeItem(OAUTH_STATE_KEY);
 
+      console.error("OAuth callback failed:", error);
       const errorMessage =
         error instanceof Error
           ? error.message

@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True  # 개발 환경에서는 기본값을 True로 설정
     API_PREFIX: str = "/api"
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005"  # 프로덕션은 환경변수로 설정
+    PPOP_AUTH_CLIENT_ORIGIN: str = ""  # PPOP Auth 클라이언트 도메인 (CORS용, 예: https://auth-client-production-04b4.up.railway.app)
     
     # Storage
     STORAGE_BUCKET_PROFILES: str = "profiles"
@@ -48,7 +49,12 @@ class Settings(BaseSettings):
     
     @property
     def cors_origins_list(self) -> List[str]:
-        return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
+        """CORS 허용 오리진 목록"""
+        origins = [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
+        # PPOP Auth 클라이언트 도메인이 설정되어 있으면 추가
+        if self.PPOP_AUTH_CLIENT_ORIGIN:
+            origins.append(self.PPOP_AUTH_CLIENT_ORIGIN.strip())
+        return origins
     
     @property
     def max_file_size_bytes(self) -> int:

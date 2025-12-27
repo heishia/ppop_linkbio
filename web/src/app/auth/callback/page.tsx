@@ -18,25 +18,34 @@ function AuthCallbackContent() {
       const errorParam = searchParams.get("error");
       const errorDescription = searchParams.get("error_description");
 
+      // 디버깅: URL 파라미터 로그
+      console.log("Auth callback params:", { code, state, errorParam, errorDescription });
+      console.log("Current URL:", window.location.href);
+
       // 에러 파라미터가 있으면 에러 처리
       if (errorParam) {
+        console.error("OAuth error from PPOP Auth:", errorParam, errorDescription);
         setCallbackError(errorDescription || errorParam);
         return;
       }
 
       // code와 state가 없으면 에러
       if (!code || !state) {
+        console.error("Missing callback parameters:", { code: !!code, state: !!state });
         setCallbackError("Invalid callback parameters. Please try logging in again.");
         return;
       }
 
       try {
+        console.log("Processing OAuth callback...");
         await handleOAuthCallback({ code, state });
+        console.log("OAuth callback successful, redirecting to dashboard...");
         // 성공 시 대시보드로 이동
-        router.push("/dashboard");
+        router.push("/dashboard/links");
       } catch (err) {
         console.error("OAuth callback error:", err);
         // 에러는 store에서 처리됨
+        setCallbackError(err instanceof Error ? err.message : "Failed to complete login");
       }
     };
 
