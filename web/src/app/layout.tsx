@@ -52,10 +52,6 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
-    "naverbot": {
-      index: true,
-      follow: true,
-    },
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
@@ -79,6 +75,7 @@ export default function RootLayout({
         />
         {/* 네이버 검색 최적화 */}
         <meta name="robots" content="index, follow" />
+        <meta name="Yeti" content="index, follow" />
         <meta name="naver-site-verification" content={process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION || ""} />
         {/* 구조화된 데이터 - Organization */}
         <script
