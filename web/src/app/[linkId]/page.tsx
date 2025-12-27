@@ -16,8 +16,16 @@ export default async function PublicProfilePage({ params }: PageProps) {
     const { data: profile } = await publicApi.getPublicProfile(linkId);
 
     return <PublicProfileClient profile={profile} />;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "response" in error &&
+      error.response &&
+      typeof error.response === "object" &&
+      "status" in error.response &&
+      error.response.status === 404
+    ) {
       notFound();
     }
     throw error;

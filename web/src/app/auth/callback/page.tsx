@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { handleOAuthCallback, isLoading, error } = useAuthStore();
+  const { handleOAuthCallback, error } = useAuthStore();
   const [callbackError, setCallbackError] = useState<string | null>(null);
 
   useEffect(() => {

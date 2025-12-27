@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { startOAuthLogin, isLoading, error, isAuthenticated } = useAuthStore();
+  const { startOAuthLogin, error, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     // 이미 로그인되어 있으면 대시보드로 이동

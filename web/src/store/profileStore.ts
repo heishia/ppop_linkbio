@@ -3,25 +3,39 @@ import { profileApi } from "@/lib/api/profile";
 import { User, ButtonStyle } from "@/lib/api/auth";
 
 // API 에러를 문자열로 변환하는 헬퍼 함수
-function parseApiError(error: any, fallbackMessage: string): string {
-  const detail = error.response?.data?.detail;
-  if (!detail) return fallbackMessage;
+function parseApiError(error: unknown, fallbackMessage: string): string {
+  // axios 에러 타입 가드
+  if (
+    error &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response &&
+    typeof error.response === "object" &&
+    "data" in error.response &&
+    error.response.data &&
+    typeof error.response.data === "object" &&
+    "detail" in error.response.data
+  ) {
+    const detail = error.response.data.detail;
+    if (!detail) return fallbackMessage;
 
-  // 문자열인 경우 그대로 반환
-  if (typeof detail === "string") return detail;
+    // 문자열인 경우 그대로 반환
+    if (typeof detail === "string") return detail;
 
-  // 배열인 경우 (Pydantic validation error)
-  if (Array.isArray(detail)) {
-    // msg 필드들을 추출하여 하나의 문자열로 합침
-    const messages = detail
-      .map((err: { msg?: string }) => err.msg)
-      .filter(Boolean);
-    return messages.length > 0 ? messages.join(", ") : fallbackMessage;
-  }
+    // 배열인 경우 (Pydantic validation error)
+    if (Array.isArray(detail)) {
+      // msg 필드들을 추출하여 하나의 문자열로 합침
+      const messages = detail
+        .map((err: { msg?: string }) => err.msg)
+        .filter(Boolean);
+      return messages.length > 0 ? messages.join(", ") : fallbackMessage;
+    }
 
-  // 객체인 경우 msg 필드가 있으면 사용
-  if (typeof detail === "object" && detail.msg) {
-    return detail.msg;
+    // 객체인 경우 msg 필드가 있으면 사용
+    if (typeof detail === "object" && detail !== null && "msg" in detail) {
+      const msg = (detail as { msg?: string }).msg;
+      return msg || fallbackMessage;
+    }
   }
 
   return fallbackMessage;
@@ -56,7 +70,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
     try {
       const response = await profileApi.getProfile();
       set({ profile: response.data, isLoading: false });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to fetch profile"),
         isLoading: false,
@@ -69,7 +83,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
     try {
       const response = await profileApi.updateProfile(data);
       set({ profile: response.data, isLoading: false });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to update profile"),
         isLoading: false,
@@ -82,7 +96,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
     try {
       const response = await profileApi.updateTheme({ theme });
       set({ profile: response.data });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to update theme"),
       });
@@ -101,7 +115,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
           : null,
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to upload image"),
         isLoading: false,
@@ -121,7 +135,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
           : null,
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to upload background"),
         isLoading: false,

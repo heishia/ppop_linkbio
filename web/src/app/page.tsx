@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Link2, Sparkles, BarChart3 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { MainHeader } from "@/components/layout/MainHeader";
 
 export default function Home() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -21,7 +22,9 @@ export default function Home() {
   }, [loadUser]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <MainHeader />
+      <main>
       {/* Hero Section */}
       <section className="px-4 py-12 sm:py-20">
         <div className="mx-auto max-w-6xl">
@@ -235,6 +238,7 @@ export default function Home() {
           </p>
         </div>
       </footer>
-    </main>
+      </main>
+    </div>
   );
 }

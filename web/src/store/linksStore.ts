@@ -2,25 +2,39 @@ import { create } from "zustand";
 import { linksApi, Link, SocialLink } from "@/lib/api/links";
 
 // API 에러를 문자열로 변환하는 헬퍼 함수
-function parseApiError(error: any, fallbackMessage: string): string {
-  const detail = error.response?.data?.detail;
-  if (!detail) return fallbackMessage;
+function parseApiError(error: unknown, fallbackMessage: string): string {
+  // axios 에러 타입 가드
+  if (
+    error &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response &&
+    typeof error.response === "object" &&
+    "data" in error.response &&
+    error.response.data &&
+    typeof error.response.data === "object" &&
+    "detail" in error.response.data
+  ) {
+    const detail = error.response.data.detail;
+    if (!detail) return fallbackMessage;
 
-  // 문자열인 경우 그대로 반환
-  if (typeof detail === "string") return detail;
+    // 문자열인 경우 그대로 반환
+    if (typeof detail === "string") return detail;
 
-  // 배열인 경우 (Pydantic validation error)
-  if (Array.isArray(detail)) {
-    // msg 필드들을 추출하여 하나의 문자열로 합침
-    const messages = detail
-      .map((err: { msg?: string }) => err.msg)
-      .filter(Boolean);
-    return messages.length > 0 ? messages.join(", ") : fallbackMessage;
-  }
+    // 배열인 경우 (Pydantic validation error)
+    if (Array.isArray(detail)) {
+      // msg 필드들을 추출하여 하나의 문자열로 합침
+      const messages = detail
+        .map((err: { msg?: string }) => err.msg)
+        .filter(Boolean);
+      return messages.length > 0 ? messages.join(", ") : fallbackMessage;
+    }
 
-  // 객체인 경우 msg 필드가 있으면 사용
-  if (typeof detail === "object" && detail.msg) {
-    return detail.msg;
+    // 객체인 경우 msg 필드가 있으면 사용
+    if (typeof detail === "object" && detail !== null && "msg" in detail) {
+      const msg = (detail as { msg?: string }).msg;
+      return msg || fallbackMessage;
+    }
   }
 
   return fallbackMessage;
@@ -62,7 +76,7 @@ export const useLinksStore = create<LinksState>((set) => ({
     try {
       const response = await linksApi.getLinks();
       set({ links: response.data, isLoading: false });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to fetch links"),
         isLoading: false,
@@ -74,7 +88,7 @@ export const useLinksStore = create<LinksState>((set) => ({
     try {
       const response = await linksApi.getSocialLinks();
       set({ socialLinks: response.data });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to fetch social links:", error);
     }
   },
@@ -87,7 +101,7 @@ export const useLinksStore = create<LinksState>((set) => ({
         links: [...state.links, response.data],
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to create link"),
         isLoading: false,
@@ -104,7 +118,7 @@ export const useLinksStore = create<LinksState>((set) => ({
           link.id === linkId ? response.data : link
         ),
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to update link"),
       });
@@ -118,7 +132,7 @@ export const useLinksStore = create<LinksState>((set) => ({
       set((state) => ({
         links: state.links.filter((link) => link.id !== linkId),
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to delete link"),
       });
@@ -130,7 +144,7 @@ export const useLinksStore = create<LinksState>((set) => ({
     try {
       const response = await linksApi.reorderLinks(linkIds);
       set({ links: response.data });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to reorder links"),
       });
@@ -146,7 +160,7 @@ export const useLinksStore = create<LinksState>((set) => ({
         socialLinks: [...state.socialLinks, response.data],
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to create social link"),
         isLoading: false,
@@ -163,7 +177,7 @@ export const useLinksStore = create<LinksState>((set) => ({
           link.id === socialLinkId ? response.data : link
         ),
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to update social link"),
       });
@@ -179,7 +193,7 @@ export const useLinksStore = create<LinksState>((set) => ({
           (link) => link.id !== socialLinkId
         ),
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: parseApiError(error, "Failed to delete social link"),
       });
