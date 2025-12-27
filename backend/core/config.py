@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # Server
     DEBUG: bool = True  # 개발 환경에서는 기본값을 True로 설정
     API_PREFIX: str = "/api"
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005"  # 프로덕션은 환경변수로 설정
     
     # Storage
     STORAGE_BUCKET_PROFILES: str = "profiles"
