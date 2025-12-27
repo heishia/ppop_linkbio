@@ -7,10 +7,9 @@ python-multipart>=0.0.12
 supabase>=2.10.0
 sqlalchemy>=2.0.36
 
-# Authentication & Security
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
-bcrypt>=4.2.0
+# Authentication & Security (PPOP Auth SSO)
+PyJWT[crypto]>=2.8.0
+httpx>=0.28.0
 
 # Validation
 pydantic>=2.10.0

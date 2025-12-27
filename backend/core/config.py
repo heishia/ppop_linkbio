@@ -21,11 +21,13 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str
     SUPABASE_SERVICE_KEY: str = ""
     
-    # JWT
-    JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    # PPOP Auth (SSO)
+    PPOP_AUTH_API_URL: str = ""  # https://auth-api.yourdomain.com
+    PPOP_AUTH_CLIENT_URL: str = ""  # https://auth.yourdomain.com
+    PPOP_AUTH_CLIENT_ID: str = ""
+    PPOP_AUTH_CLIENT_SECRET: str = ""
+    PPOP_AUTH_REDIRECT_URI: str = ""  # https://your-ppoplink.com/auth/callback
+    PPOP_AUTH_JWKS_URI: str = ""  # https://auth-api.yourdomain.com/.well-known/jwks.json
     
     # Server
     DEBUG: bool = True  # 개발 환경에서는 기본값을 True로 설정
@@ -84,13 +86,19 @@ def get_settings() -> Settings:
         print("Required environment variables:")
         print("  - SUPABASE_URL")
         print("  - SUPABASE_KEY")
-        print("  - JWT_SECRET_KEY")
+        print("  - PPOP_AUTH_API_URL")
+        print("  - PPOP_AUTH_CLIENT_URL")
+        print("  - PPOP_AUTH_CLIENT_ID")
+        print("  - PPOP_AUTH_CLIENT_SECRET")
+        print("  - PPOP_AUTH_REDIRECT_URI")
+        print("  - PPOP_AUTH_JWKS_URI")
         print()
         print("Please create a .env.dev file in the project root with these variables.")
         print("Example:")
         print("  SUPABASE_URL=https://your-project.supabase.co")
         print("  SUPABASE_KEY=your-anon-key")
-        print("  JWT_SECRET_KEY=your-secret-key")
+        print("  PPOP_AUTH_API_URL=https://auth-api.yourdomain.com")
+        print("  PPOP_AUTH_CLIENT_ID=your-client-id")
         print("=" * 60)
         sys.exit(1)
 

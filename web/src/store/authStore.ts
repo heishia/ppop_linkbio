@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { authApi, User, RegisterData, LoginData } from "@/lib/api/auth";
+import { authApi, User, OAuthCallbackData } from "@/lib/api/auth";
 
 // API 에러를 문자열로 변환하는 헬퍼 함수
 function parseApiError(error: unknown, fallbackMessage: string): string {
@@ -27,6 +27,9 @@ function parseApiError(error: unknown, fallbackMessage: string): string {
   return fallbackMessage;
 }
 
+// OAuth state 저장/검증을 위한 키
+const OAUTH_STATE_KEY = "oauth_state";
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -34,8 +37,8 @@ interface AuthState {
   error: string | null;
 
   // Actions
-  login: (data: LoginData) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  startOAuthLogin: () => Promise<void>;
+  handleOAuthCallback: (data: OAuthCallbackData) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   clearError: () => void;
@@ -47,41 +50,45 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
 
-  login: async (data: LoginData) => {
+  startOAuthLogin: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await authApi.login(data);
-      const { access_token, refresh_token } = response.data;
-      const { user } = response;
-
-      // Store tokens
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-
-      set({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
+      const response = await authApi.getOAuthLoginURL();
+      
+      // state를 세션 스토리지에 저장 (CSRF 방지)
+      sessionStorage.setItem(OAUTH_STATE_KEY, response.state);
+      
+      // PPOP Auth 로그인 페이지로 리다이렉트
+      window.location.href = response.login_url;
     } catch (error: unknown) {
       set({
-        error: parseApiError(error, "Login failed. Please try again."),
+        error: parseApiError(error, "Failed to start login. Please try again."),
         isLoading: false,
       });
       throw error;
     }
   },
 
-  register: async (data: RegisterData) => {
+  handleOAuthCallback: async (data: OAuthCallbackData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await authApi.register(data);
+      // state 검증 (CSRF 방지)
+      const savedState = sessionStorage.getItem(OAUTH_STATE_KEY);
+      if (savedState && savedState !== data.state) {
+        throw new Error("Invalid state parameter. Please try logging in again.");
+      }
+      
+      // 인가 코드를 토큰으로 교환
+      const response = await authApi.oauthCallback(data);
       const { access_token, refresh_token } = response.data;
       const { user } = response;
 
-      // Store tokens
+      // 토큰 저장
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
+      
+      // state 정리
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
 
       set({
         user,
@@ -89,8 +96,15 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
     } catch (error: unknown) {
+      // state 정리
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : parseApiError(error, "Login failed. Please try again.");
+      
       set({
-        error: parseApiError(error, "Registration failed. Please try again."),
+        error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -103,9 +117,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Clear tokens and state
+      // 토큰 및 상태 정리
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
       set({
         user: null,
         isAuthenticated: false,
@@ -130,7 +145,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
     } catch (error) {
-      // Token invalid, clear it
+      // 토큰이 유효하지 않으면 정리
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       set({

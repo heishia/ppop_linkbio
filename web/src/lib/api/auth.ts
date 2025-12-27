@@ -1,26 +1,5 @@
 import { apiClient } from "./client";
 
-export interface RegisterData {
-  username: string;
-  email: string;
-  password: string;
-  display_name?: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  data: {
-    access_token: string;
-    refresh_token: string;
-    token_type: string;
-  };
-  user: User;
-}
-
 // 버튼 스타일 타입
 export type ButtonStyle = "default" | "outline" | "filled";
 
@@ -43,36 +22,60 @@ export interface User {
   updated_at: string | null;
 }
 
+export interface AuthResponse {
+  data: {
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+  };
+  user: User;
+}
+
+export interface OAuthLoginURLResponse {
+  success: boolean;
+  login_url: string;
+  state: string;
+}
+
+export interface OAuthCallbackData {
+  code: string;
+  state: string;
+}
+
 export const authApi = {
-  register: async (data: RegisterData): Promise<AuthResponse> => {
+  // OAuth 로그인 URL 가져오기
+  getOAuthLoginURL: async (): Promise<OAuthLoginURLResponse> => {
+    const response = await apiClient.get<OAuthLoginURLResponse>(
+      "/api/auth/oauth/login"
+    );
+    return response.data;
+  },
+
+  // OAuth 콜백 처리 (인가 코드 -> 토큰 교환)
+  oauthCallback: async (data: OAuthCallbackData): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
-      "/api/auth/register",
+      "/api/auth/oauth/callback",
       data
     );
     return response.data;
   },
 
-  login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>(
-      "/api/auth/login",
-      data
-    );
-    return response.data;
-  },
-
+  // 현재 사용자 정보 가져오기
   getMe: async (): Promise<{ data: User }> => {
     const response = await apiClient.get<{ data: User }>("/api/auth/me");
     return response.data;
   },
 
+  // 로그아웃
   logout: async (): Promise<void> => {
     await apiClient.post("/api/auth/logout");
   },
 
+  // 토큰 갱신
   refreshToken: async (
     refreshToken: string
-  ): Promise<{ data: { access_token: string; refresh_token: string } }> => {
-    const response = await apiClient.post("/api/auth/refresh", {
+  ): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>("/api/auth/oauth/refresh", {
       refresh_token: refreshToken,
     });
     return response.data;
