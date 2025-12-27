@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8005";
-const PPOP_AUTH_CLIENT_ORIGIN = process.env.NEXT_PUBLIC_PPOP_AUTH_CLIENT_ORIGIN || "https://auth-client-production-04b4.up.railway.app";
+const PPOP_AUTH_CLIENT_ORIGIN = process.env.NEXT_PUBLIC_PPOP_AUTH_CLIENT_ORIGIN;
+
+// 환경변수가 없으면 에러 반환 (보안상 하드코딩된 값 사용 금지)
+if (!PPOP_AUTH_CLIENT_ORIGIN) {
+  console.error("NEXT_PUBLIC_PPOP_AUTH_CLIENT_ORIGIN environment variable is not set");
+}
 
 export async function POST(request: NextRequest) {
+  // 환경변수 확인
+  if (!PPOP_AUTH_CLIENT_ORIGIN) {
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await request.json();
     
@@ -45,6 +58,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function OPTIONS() {
+  // 환경변수 확인
+  if (!PPOP_AUTH_CLIENT_ORIGIN) {
+    return new NextResponse(null, { status: 500 });
+  }
+
   return new NextResponse(null, {
     status: 200,
     headers: {
