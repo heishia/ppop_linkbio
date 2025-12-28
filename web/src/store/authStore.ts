@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { authApi, User, OAuthCallbackData } from "@/lib/api/auth";
+import { authApi, User, OAuthCallbackData, SubscriptionStatus } from "@/lib/api/auth";
 
 // API 에러를 문자열로 변환하는 헬퍼 함수
 function parseApiError(error: unknown, fallbackMessage: string): string {
@@ -30,17 +30,21 @@ function parseApiError(error: unknown, fallbackMessage: string): string {
 // OAuth state 저장/검증을 위한 키
 const OAUTH_STATE_KEY = "oauth_state";
 
+import { SubscriptionStatus } from "@/lib/api/auth";
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  subscription: SubscriptionStatus | null;
 
   // Actions
   startOAuthLogin: () => Promise<void>;
   handleOAuthCallback: (data: OAuthCallbackData) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  loadSubscription: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -49,6 +53,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  subscription: null,
 
   startOAuthLogin: async () => {
     set({ isLoading: true, error: null });
@@ -107,6 +112,17 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
       
+      // 세션 스토리지 데이터를 서버로 동기화
+      try {
+        const { useProfileStore } = await import("./profileStore");
+        const { useLinksStore } = await import("./linksStore");
+        
+        await useProfileStore.getState().syncSessionDataToServer();
+        await useLinksStore.getState().syncLinksDataToServer();
+      } catch (error) {
+        console.error("Failed to sync session data to server:", error);
+      }
+      
       console.log("OAuth callback completed successfully");
     } catch (error: unknown) {
       // state 정리
@@ -159,6 +175,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      
+      // 구독 상태도 함께 로드
+      await get().loadSubscription();
     } catch (error) {
       // 토큰이 유효하지 않으면 정리
       localStorage.removeItem("access_token");
@@ -167,7 +186,24 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: null,
         isAuthenticated: false,
         isLoading: false,
+        subscription: null,
       });
+    }
+  },
+
+  loadSubscription: async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      set({ subscription: null });
+      return;
+    }
+
+    try {
+      const subscription = await authApi.getSubscriptionStatus();
+      set({ subscription });
+    } catch (error) {
+      console.error("Failed to load subscription:", error);
+      set({ subscription: null });
     }
   },
 

@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     PPOP_AUTH_CLIENT_SECRET: str = ""
     PPOP_AUTH_REDIRECT_URI: str = ""  # https://your-ppoplink.com/auth/callback
     PPOP_AUTH_JWKS_URI: str = ""  # https://auth-api.yourdomain.com/.well-known/jwks.json
+    PPOP_AUTH_SERVICE_CODE: str = "ppop-link"  # PPOP Auth 서비스 코드
+    PPOP_AUTH_ADMIN_API_KEY: str = ""  # PPOP Auth 관리자 API 키
     
     # Server
     DEBUG: bool = True  # 개발 환경에서는 기본값을 True로 설정

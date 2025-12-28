@@ -16,10 +16,15 @@ from backend.core.exceptions import (
     InvalidCredentialsError,
     UserNotFoundError,
     UsernameAlreadyExistsError,
-    DatabaseError
+    DatabaseError,
+    ServiceNotFoundError,
+    SubscriptionError
 )
 from backend.core.logger import get_logger
-from backend.core.models import User, Token, PlanType
+from backend.core.models import (
+    User, Token, PlanType, 
+    SubscriptionStatusResponse, SubscriptionPlan, SubscriptionStatus
+)
 from backend.core.security import get_token_payload
 from backend.auth.schemas import OAuthTokenResponse
 from backend.utils.linkid_utils import encode_user_seq
@@ -188,17 +193,30 @@ class AuthService:
             ).eq("id", str(ppop_user_id)).execute()
             result.data[0]["public_link_id"] = public_link_id
         
-        # 무료 플랜 생성
+        # BASIC 플랜 생성 (로컬 DB에 저장, 실제 구독은 PPOP Auth에서 관리)
         from uuid import uuid4
         plan_data = {
             "id": str(uuid4()),
             "user_id": str(ppop_user_id),
-            "plan_type": PlanType.FREE.value,
+            "plan_type": PlanType.BASIC.value,
             "started_at": now,
         }
         db.table(self.TABLE_USER_PLANS).insert(plan_data).execute()
         
         user = self._map_to_user(result.data[0])
+        
+        # PPOP Auth에서 BASIC 플랜 활성화
+        if email:
+            try:
+                await self.activate_basic_subscription(email, ppop_user_id)
+                logger.info(f"BASIC subscription activated for user: {email}")
+            except Exception as e:
+                logger.error(f"Failed to activate BASIC subscription for {email}: {e}")
+                # 구독 활성화 실패 시 에러 반환
+                raise DatabaseError(
+                    detail="User created but subscription activation failed. Please contact support."
+                )
+        
         logger.info(f"User created from PPOP Auth: {user.username}, public_link_id: {user.public_link_id}")
         return user
     
@@ -235,6 +253,209 @@ class AuthService:
             return None
         
         return self._map_to_user(result.data[0])
+    
+    async def get_subscription_status(self, access_token: str) -> SubscriptionStatusResponse:
+        """
+        PPOP Auth에서 구독 상태 조회
+        
+        Args:
+            access_token: PPOP Auth 액세스 토큰
+            
+        Returns:
+            SubscriptionStatusResponse: 구독 상태 정보
+            
+        Raises:
+            InvalidCredentialsError: 토큰이 유효하지 않음
+            ServiceNotFoundError: 서비스 코드가 존재하지 않음
+            SubscriptionError: 구독 상태 조회 실패
+        """
+        if not settings.PPOP_AUTH_API_URL or not settings.PPOP_AUTH_SERVICE_CODE:
+            raise SubscriptionError(detail="PPOP Auth configuration is missing")
+        
+        subscription_url = f"{settings.PPOP_AUTH_API_URL}/api/subscriptions/{settings.PPOP_AUTH_SERVICE_CODE}"
+        
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(
+                    subscription_url,
+                    headers={
+                        "Authorization": f"Bearer {access_token}",
+                        "Content-Type": "application/json"
+                    }
+                )
+                
+                if response.status_code == 401:
+                    logger.warning("Token is invalid or expired")
+                    raise InvalidCredentialsError(detail="Token expired or invalid")
+                
+                if response.status_code == 404:
+                    logger.error(f"Service code not found: {settings.PPOP_AUTH_SERVICE_CODE}")
+                    raise ServiceNotFoundError(
+                        detail=f"Service code '{settings.PPOP_AUTH_SERVICE_CODE}' not found. Please contact administrator."
+                    )
+                
+                if response.status_code != 200:
+                    logger.error(f"Failed to get subscription status: {response.status_code} - {response.text}")
+                    raise SubscriptionError(
+                        detail=f"Failed to check subscription status: {response.status_code}"
+                    )
+                
+                data = response.json()
+                expires_at = None
+                if data.get("expiresAt"):
+                    try:
+                        # ISO 8601 형식 파싱 (Z를 +00:00로 변환)
+                        expires_str = data["expiresAt"].replace("Z", "+00:00")
+                        expires_at = datetime.fromisoformat(expires_str)
+                    except (ValueError, AttributeError) as e:
+                        logger.warning(f"Failed to parse expiresAt: {data.get('expiresAt')}, error: {e}")
+                        expires_at = None
+                
+                return SubscriptionStatusResponse(
+                    hasAccess=data.get("hasAccess", False),
+                    plan=SubscriptionPlan(data.get("plan", "BASIC")),
+                    status=SubscriptionStatus(data.get("status", "NONE")),
+                    expiresAt=expires_at
+                )
+                
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout while checking subscription status: {e}")
+            raise SubscriptionError(detail="Network timeout while checking subscription status")
+        except httpx.RequestError as e:
+            logger.error(f"Network error while checking subscription status: {e}")
+            raise SubscriptionError(detail="Network error while checking subscription status")
+        except (InvalidCredentialsError, ServiceNotFoundError, SubscriptionError):
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error while checking subscription status: {e}")
+            raise SubscriptionError(detail="Unexpected error while checking subscription status")
+    
+    async def activate_basic_subscription(self, email: str, user_id: UUID) -> None:
+        """
+        PPOP Auth 관리자 API를 통해 BASIC 플랜 활성화
+        
+        Args:
+            email: 사용자 이메일
+            user_id: 사용자 ID (UUID)
+            
+        Raises:
+            SubscriptionError: 구독 활성화 실패
+        """
+        if not settings.PPOP_AUTH_API_URL or not settings.PPOP_AUTH_ADMIN_API_KEY:
+            raise SubscriptionError(detail="PPOP Auth admin configuration is missing")
+        
+        activate_url = f"{settings.PPOP_AUTH_API_URL}/api/admin/subscriptions/activate"
+        
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(
+                    activate_url,
+                    json={
+                        "email": email,
+                        "serviceCode": settings.PPOP_AUTH_SERVICE_CODE,
+                        "plan": "BASIC"
+                    },
+                    headers={
+                        "x-api-key": settings.PPOP_AUTH_ADMIN_API_KEY,
+                        "Content-Type": "application/json"
+                    }
+                )
+                
+                if response.status_code == 404:
+                    error_data = response.json()
+                    logger.error(f"User not found in PPOP Auth: {email}")
+                    raise SubscriptionError(
+                        detail=f"User not found in PPOP Auth: {email}. Please ensure the user exists."
+                    )
+                
+                if response.status_code != 200:
+                    logger.error(f"Failed to activate BASIC subscription: {response.status_code} - {response.text}")
+                    raise SubscriptionError(
+                        detail=f"Failed to activate BASIC subscription: {response.status_code}"
+                    )
+                
+                result = response.json()
+                if not result.get("success", False):
+                    logger.error(f"Subscription activation returned failure: {result}")
+                    raise SubscriptionError(
+                        detail=result.get("message", "Failed to activate BASIC subscription")
+                    )
+                
+                logger.info(f"BASIC subscription activated for {email}")
+                
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout while activating subscription: {e}")
+            raise SubscriptionError(detail="Network timeout while activating subscription")
+        except httpx.RequestError as e:
+            logger.error(f"Network error while activating subscription: {e}")
+            raise SubscriptionError(detail="Network error while activating subscription")
+        except SubscriptionError:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error while activating subscription: {e}")
+            raise SubscriptionError(detail="Unexpected error while activating subscription")
+    
+    async def check_user_subscription_by_user_id(self, user_id: str) -> bool:
+        """
+        사용자 ID로 PRO 구독 상태 확인 (관리자 API 사용)
+        
+        Note: PPOP Auth 관리자 API의 정확한 엔드포인트 구조에 따라 수정이 필요할 수 있습니다.
+        현재는 가정에 기반한 구현이며, 실제 API 구조에 맞게 조정이 필요합니다.
+        
+        Args:
+            user_id: PPOP Auth 사용자 ID (UUID 문자열)
+            
+        Returns:
+            bool: PRO 사용자이고 ACTIVE 상태이면 True, 그 외에는 False
+        """
+        if not settings.PPOP_AUTH_API_URL or not settings.PPOP_AUTH_ADMIN_API_KEY or not settings.PPOP_AUTH_SERVICE_CODE:
+            logger.warning("PPOP Auth admin configuration is missing, returning False for subscription check")
+            return False
+        
+        # 관리자 API로 구독 상태 확인
+        # PPOP Auth 관리자 API 구조에 따라 엔드포인트가 다를 수 있음
+        # 예시: /api/admin/users/{user_id}/subscriptions/{service_code}
+        # 또는: /api/admin/subscriptions/{service_code}?userId={user_id}
+        subscription_url = f"{settings.PPOP_AUTH_API_URL}/api/admin/users/{user_id}/subscriptions/{settings.PPOP_AUTH_SERVICE_CODE}"
+        
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get(
+                    subscription_url,
+                    headers={
+                        "x-api-key": settings.PPOP_AUTH_ADMIN_API_KEY,
+                        "Content-Type": "application/json"
+                    }
+                )
+                
+                if response.status_code == 404:
+                    # 사용자 또는 구독을 찾을 수 없으면 False 반환
+                    logger.debug(f"User or subscription not found: {user_id}")
+                    return False
+                
+                if response.status_code != 200:
+                    logger.warning(f"Failed to check subscription by user_id: {response.status_code} - {response.text}")
+                    return False
+                
+                data = response.json()
+                plan = data.get("plan", "BASIC")
+                status = data.get("status", "NONE")
+                has_access = data.get("hasAccess", False)
+                
+                # PRO 플랜이고 ACTIVE 상태이며 접근 권한이 있으면 True
+                is_pro = (plan == "PRO" and status == "ACTIVE" and has_access)
+                logger.debug(f"Subscription check for {user_id}: plan={plan}, status={status}, hasAccess={has_access}, is_pro={is_pro}")
+                return is_pro
+                
+        except httpx.TimeoutException:
+            logger.warning(f"Timeout while checking subscription by user_id: {user_id}")
+            return False
+        except httpx.RequestError as e:
+            logger.warning(f"Network error while checking subscription by user_id: {user_id}, error: {e}")
+            return False
+        except Exception as e:
+            logger.warning(f"Unexpected error while checking subscription by user_id: {user_id}, error: {e}")
+            return False
     
     def _map_to_user(self, data: dict) -> User:
         """DB 데이터를 User 모델로 변환"""

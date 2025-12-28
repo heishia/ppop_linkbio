@@ -18,6 +18,7 @@ export interface PublicProfile {
   button_style: ButtonStyle;            // 링크 버튼 스타일
   links: Link[];
   social_links: SocialLink[];
+  is_pro_user: boolean;                 // PRO 사용자 여부 (워터마크 제거용)
 }
 
 export const publicApi = {

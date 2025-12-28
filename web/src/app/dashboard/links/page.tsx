@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useLinksStore } from "@/store/linksStore";
 import { useProfileStore } from "@/store/profileStore";
+import { useAuthStore } from "@/store/authStore";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -131,9 +132,41 @@ export default function LinksPage() {
   // 공개 프로필 URL 상태
   const [publicProfileUrl, setPublicProfileUrl] = useState("");
 
+  // 공유 링크 발급 핸들러 (로그인 필요)
+  const handleGetShareLink = async () => {
+    if (!isAuthenticated) {
+      // 비로그인 상태면 로그인 페이지로 이동
+      const { startOAuthLogin } = useAuthStore.getState();
+      await startOAuthLogin();
+      return;
+    }
+
+    try {
+      const { profileApi } = await import("@/lib/api/profile");
+      const response = await profileApi.getShareLink();
+      const shareUrl = `${window.location.origin}${response.share_url}`;
+      setPublicProfileUrl(shareUrl);
+      
+      // 클립보드에 복사
+      await navigator.clipboard.writeText(shareUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to get share link:", error);
+      setProfileSaveMessage({
+        type: "error",
+        text: "Failed to get share link. Please try again.",
+      });
+    }
+  };
+
   // 링크 복사 핸들러
   const handleCopyLink = async () => {
-    if (!publicProfileUrl) return;
+    if (!publicProfileUrl) {
+      // 공유 링크가 없으면 발급 시도
+      await handleGetShareLink();
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(publicProfileUrl);
@@ -146,15 +179,44 @@ export default function LinksPage() {
 
   // 내 페이지 새 탭에서 열기
   const handleOpenMyPage = () => {
-    if (!publicProfileUrl) return;
+    if (!publicProfileUrl) {
+      // 공유 링크가 없으면 발급 시도
+      handleGetShareLink();
+      return;
+    }
     window.open(publicProfileUrl, "_blank");
   };
 
+  const { isAuthenticated } = useAuthStore();
+  const { loadFromSessionStorage } = useProfileStore();
+  const { loadLinksFromSessionStorage } = useLinksStore();
+
   useEffect(() => {
-    fetchLinks();
-    fetchSocialLinks();
-    fetchProfile();
-  }, [fetchLinks, fetchSocialLinks, fetchProfile]);
+    if (isAuthenticated) {
+      // 로그인 상태면 서버에서 데이터 가져오기
+      fetchLinks();
+      fetchSocialLinks();
+      fetchProfile();
+    } else {
+      // 비로그인 상태면 세션 스토리지에서 데이터 로드
+      const tempProfile = loadFromSessionStorage();
+      if (tempProfile) {
+        setFormData({
+          display_name: tempProfile.display_name || "",
+          bio: tempProfile.bio || "",
+          background_color: tempProfile.background_color || "#ffffff",
+          button_style: (tempProfile.button_style || "default") as ButtonStyle,
+        });
+        setOriginalFormData({
+          display_name: tempProfile.display_name || "",
+          bio: tempProfile.bio || "",
+          background_color: tempProfile.background_color || "#ffffff",
+          button_style: (tempProfile.button_style || "default") as ButtonStyle,
+        });
+      }
+      loadLinksFromSessionStorage();
+    }
+  }, [isAuthenticated, fetchLinks, fetchSocialLinks, fetchProfile, loadFromSessionStorage, loadLinksFromSessionStorage]);
 
   // 프로필 텍스트 필드만 의존성으로 사용 (이미지 업로드 시 formData 리셋 방지)
   // 이미지 URL 변경은 formData와 무관하므로 해당 필드들만 감시
@@ -1041,6 +1103,7 @@ export default function LinksPage() {
                 links={previewLinks}
                 socialLinks={previewSocialLinks}
                 buttonStyle={formData.button_style}
+                onShareLinkClick={handleGetShareLink}
               />
             </div>
 
@@ -1609,6 +1672,7 @@ export default function LinksPage() {
             links={previewLinks}
             socialLinks={previewSocialLinks}
             buttonStyle={formData.button_style}
+            onShareLinkClick={handleGetShareLink}
           />
         </div>
       </div>

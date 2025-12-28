@@ -6,7 +6,7 @@ PPOP Auth SSO 연동용
 from typing import Optional
 from pydantic import BaseModel
 
-from backend.core.models import User, Token
+from backend.core.models import User, Token, SubscriptionStatusResponse
 
 
 class OAuthCallbackRequest(BaseModel):
@@ -64,3 +64,9 @@ class RegisterExtendedResponse(BaseModel):
     """확장 가입 응답"""
     success: bool = True
     message: str
+
+
+class SubscriptionStatusResponseSchema(BaseModel):
+    """구독 상태 응답 스키마"""
+    success: bool = True
+    data: SubscriptionStatusResponse

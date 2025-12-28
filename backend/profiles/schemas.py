@@ -29,3 +29,9 @@ class ImageUploadResponse(BaseModel):
     success: bool = True
     url: str
 
+
+class ShareLinkResponse(BaseModel):
+    success: bool = True
+    public_link_id: str
+    share_url: str
+

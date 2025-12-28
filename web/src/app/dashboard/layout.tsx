@@ -1,6 +1,5 @@
 "use client";
 
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
 import { MobileHeader } from "@/components/dashboard/MobileHeader";
@@ -15,7 +14,7 @@ export default function DashboardLayout({
   const isMobile = useIsMobile();
 
   return (
-    <ProtectedRoute>
+    <>
       {isMobile ? (
         // 모바일 레이아웃
         <div className="flex min-h-screen flex-col bg-gray-50">
@@ -35,6 +34,6 @@ export default function DashboardLayout({
           </div>
         </div>
       )}
-    </ProtectedRoute>
+    </>
   );
 }

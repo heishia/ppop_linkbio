@@ -3,10 +3,10 @@ OAuth 인증 API 라우터
 PPOP Auth SSO 연동
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from backend.core.security import verify_access_token
+from backend.core.security import verify_access_token, extract_token_from_header
 from backend.core.models import User, Token
 from backend.auth.schemas import (
     OAuthCallbackRequest,
@@ -16,7 +16,8 @@ from backend.auth.schemas import (
     MessageResponse,
     OAuthLoginURLResponse,
     RegisterExtendedRequest,
-    RegisterExtendedResponse
+    RegisterExtendedResponse,
+    SubscriptionStatusResponseSchema
 )
 from backend.auth.service import auth_service
 
@@ -34,6 +35,20 @@ async def get_current_user(
         from backend.core.exceptions import UserNotFoundError
         raise UserNotFoundError()
     return user
+
+
+async def get_current_user_with_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> tuple[User, str]:
+    """현재 인증된 사용자와 access_token 반환"""
+    access_token = credentials.credentials
+    user_id = verify_access_token(access_token)
+    user = await auth_service.get_user_by_id(user_id)
+    if not user:
+        from backend.core.exceptions import UserNotFoundError
+        raise UserNotFoundError()
+    return user, access_token
 
 
 @router.get("/oauth/login", response_model=OAuthLoginURLResponse)
@@ -120,3 +135,16 @@ async def register_extended(request: RegisterExtendedRequest):
         success=True,
         message="Registration extended successfully"
     )
+
+
+@router.get("/subscription/{service_code}", response_model=SubscriptionStatusResponseSchema)
+async def get_subscription_status(
+    service_code: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    구독 상태 조회 (PPOP Auth API 호출)
+    """
+    access_token = credentials.credentials
+    subscription = await auth_service.get_subscription_status(access_token)
+    return SubscriptionStatusResponseSchema(success=True, data=subscription)

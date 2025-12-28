@@ -15,7 +15,11 @@ from backend.core.exceptions import (
     FeatureNotAvailableError
 )
 from backend.core.logger import get_logger
-from backend.core.models import User, PlanType, UserPlan
+from backend.core.models import (
+    User, PlanType, UserPlan,
+    SubscriptionStatusResponse, SubscriptionPlan, SubscriptionStatus
+)
+from backend.auth.service import auth_service
 from backend.files.service import file_service
 from backend.profiles.schemas import ProfileUpdateRequest, ThemeUpdateRequest
 
@@ -77,9 +81,9 @@ class ProfileService:
         logger.info(f"Profile image uploaded: user_id={user_id}")
         return url
     
-    async def upload_background_image(self, user_id: UUID, file: UploadFile) -> str:
+    async def upload_background_image(self, user_id: UUID, file: UploadFile, access_token: Optional[str] = None) -> str:
         # Pro 플랜 체크
-        plan = await self._get_user_plan(user_id)
+        plan = await self._get_user_plan(user_id, access_token)
         if plan.plan_type != PlanType.PRO:
             raise FeatureNotAvailableError(
                 detail="Background image is available for Pro plan only"
@@ -95,17 +99,42 @@ class ProfileService:
         logger.info(f"Background image uploaded: user_id={user_id}")
         return url
     
-    async def _get_user_plan(self, user_id: UUID) -> UserPlan:
+    async def _get_user_plan(self, user_id: UUID, access_token: Optional[str] = None) -> UserPlan:
+        """
+        사용자 플랜 조회 (PPOP Auth API 우선, 실패 시 로컬 DB)
+        
+        Args:
+            user_id: 사용자 ID
+            access_token: PPOP Auth access token (선택사항, 있으면 PPOP Auth API 호출)
+        """
+        # access_token이 있으면 PPOP Auth API 호출
+        if access_token:
+            try:
+                subscription = await auth_service.get_subscription_status(access_token)
+                # PPOP Auth 응답을 UserPlan으로 변환
+                plan_type = PlanType.PRO if subscription.plan == SubscriptionPlan.PRO else PlanType.BASIC
+                return UserPlan(
+                    id=user_id,
+                    user_id=user_id,
+                    plan_type=plan_type,
+                    started_at=datetime.utcnow(),
+                    expires_at=subscription.expiresAt
+                )
+            except Exception as e:
+                logger.warning(f"Failed to get subscription from PPOP Auth, falling back to local DB: {e}")
+                # PPOP Auth API 호출 실패 시 로컬 DB 조회로 폴백
+        
+        # 로컬 DB에서 플랜 조회
         result = db.table(self.TABLE_USER_PLANS).select("*").eq(
             "user_id", str(user_id)
         ).order("started_at", desc=True).limit(1).execute()
         
         if not result.data:
-            # 플랜이 없으면 무료 플랜으로 간주
+            # 플랜이 없으면 BASIC 플랜으로 간주
             return UserPlan(
                 id=user_id,
                 user_id=user_id,
-                plan_type=PlanType.FREE,
+                plan_type=PlanType.BASIC,
                 started_at=datetime.utcnow()
             )
         

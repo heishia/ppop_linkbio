@@ -11,8 +11,22 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class PlanType(str, Enum):
-    FREE = "free"
+    BASIC = "basic"
     PRO = "pro"
+
+
+class SubscriptionPlan(str, Enum):
+    """PPOP Auth 구독 플랜"""
+    BASIC = "BASIC"
+    PRO = "PRO"
+
+
+class SubscriptionStatus(str, Enum):
+    """PPOP Auth 구독 상태"""
+    ACTIVE = "ACTIVE"
+    CANCELLED = "CANCELLED"
+    EXPIRED = "EXPIRED"
+    NONE = "NONE"
 
 
 class SocialPlatform(str, Enum):
@@ -90,7 +104,7 @@ class UserInDB(User):
 
 # User Plan Models
 class UserPlanBase(BaseModel):
-    plan_type: PlanType = PlanType.FREE
+    plan_type: PlanType = PlanType.BASIC
 
 
 class UserPlan(UserPlanBase, TimestampMixin):
@@ -174,6 +188,7 @@ class PublicProfile(BaseModel):
     button_style: str = "default"                 # 링크 버튼 스타일
     links: List[Link] = []
     social_links: List[SocialLink] = []
+    is_pro_user: bool = False                     # PRO 사용자 여부 (워터마크 제거용)
 
 
 # Auth Models
@@ -201,4 +216,13 @@ class AdminStats(BaseModel):
 
 class UserWithPlan(User):
     plan: Optional[UserPlan] = None
+
+
+# Subscription Models (PPOP Auth)
+class SubscriptionStatusResponse(BaseModel):
+    """PPOP Auth 구독 상태 응답"""
+    hasAccess: bool
+    plan: SubscriptionPlan
+    status: SubscriptionStatus
+    expiresAt: Optional[datetime] = None
 

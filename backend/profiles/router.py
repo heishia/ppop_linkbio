@@ -3,6 +3,7 @@
 """
 
 from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from backend.core.models import User
 from backend.auth.router import get_current_user
@@ -10,11 +11,13 @@ from backend.profiles.schemas import (
     ProfileUpdateRequest,
     ThemeUpdateRequest,
     ProfileResponse,
-    ImageUploadResponse
+    ImageUploadResponse,
+    ShareLinkResponse
 )
 from backend.profiles.service import profile_service
 
 router = APIRouter()
+security = HTTPBearer()
 
 
 @router.get("", response_model=ProfileResponse)
@@ -53,8 +56,27 @@ async def upload_profile_image(
 @router.post("/background", response_model=ImageUploadResponse)
 async def upload_background_image(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    url = await profile_service.upload_background_image(current_user.id, file)
+    access_token = credentials.credentials if credentials else None
+    url = await profile_service.upload_background_image(current_user.id, file, access_token)
     return ImageUploadResponse(url=url)
+
+
+@router.get("/share-link", response_model=ShareLinkResponse)
+async def get_share_link(current_user: User = Depends(get_current_user)):
+    """
+    공유 링크 발급 (인증 필수)
+    사용자의 public_link_id를 반환
+    """
+    profile = await profile_service.get_profile(current_user.id)
+    if not profile.public_link_id:
+        from backend.core.exceptions import NotFoundError
+        raise NotFoundError(detail="Public link ID not found. Please contact support.")
+    
+    return ShareLinkResponse(
+        public_link_id=profile.public_link_id,
+        share_url=f"/{profile.public_link_id}"
+    )
 

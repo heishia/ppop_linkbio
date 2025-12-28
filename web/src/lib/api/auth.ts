@@ -42,6 +42,13 @@ export interface OAuthCallbackData {
   state: string;
 }
 
+export interface SubscriptionStatus {
+  hasAccess: boolean;
+  plan: "BASIC" | "PRO";
+  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "NONE";
+  expiresAt: string | null;
+}
+
 export const authApi = {
   // OAuth 로그인 URL 가져오기
   getOAuthLoginURL: async (): Promise<OAuthLoginURLResponse> => {
@@ -79,5 +86,14 @@ export const authApi = {
       refresh_token: refreshToken,
     });
     return response.data;
+  },
+
+  // 구독 상태 조회 (백엔드 API를 통해 PPOP Auth 호출)
+  getSubscriptionStatus: async (): Promise<SubscriptionStatus> => {
+    const SERVICE_CODE = "ppop-link";
+    const response = await apiClient.get<{ success: boolean; data: SubscriptionStatus }>(
+      `/api/auth/subscription/${SERVICE_CODE}`
+    );
+    return response.data.data;
   },
 };

@@ -109,7 +109,7 @@ class AdminService:
         # 기존 플랜 확인
         existing_plan = await self._get_user_plan(user_id)
         
-        if existing_plan and existing_plan.plan_type != PlanType.FREE:
+        if existing_plan and existing_plan.plan_type != PlanType.BASIC:
             # 기존 플랜 업데이트
             db.table(self.TABLE_USER_PLANS).update({
                 "plan_type": plan_type.value,

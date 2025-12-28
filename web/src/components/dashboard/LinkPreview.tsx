@@ -27,11 +27,16 @@ interface LinkPreviewProps {
   links: Link[];
   socialLinks: SocialLink[];
   buttonStyle?: ButtonStyle;
+  onShareLinkClick?: () => void;
 }
 
 // 미리보기 전용 컴포넌트 - 대시보드에서 실제 링크 페이지가 어떻게 보일지 표시
-export function LinkPreview({ profile, links, socialLinks, buttonStyle }: LinkPreviewProps) {
+export function LinkPreview({ profile, links, socialLinks, buttonStyle, onShareLinkClick }: LinkPreviewProps) {
   const router = useRouter();
+  const { isAuthenticated, startOAuthLogin, subscription } = useAuthStore();
+  
+  // PRO 사용자 여부 확인
+  const isProUser = subscription?.plan === "PRO" && subscription?.status === "ACTIVE" && subscription?.hasAccess;
 
   // 활성화된 링크만 필터링
   const activeLinks = links.filter((link) => link.is_active);
@@ -48,6 +53,20 @@ export function LinkPreview({ profile, links, socialLinks, buttonStyle }: LinkPr
   // X 버튼 클릭 시 결제 페이지로 이동
   const handleRemoveWatermark = () => {
     router.push("/dashboard/pricing");
+  };
+
+  // 공유 링크 보기 버튼 클릭 핸들러
+  const handleShareLinkClick = async () => {
+    if (!isAuthenticated) {
+      // 비로그인 상태면 로그인 페이지로 이동
+      await startOAuthLogin();
+      return;
+    }
+    
+    // 로그인 상태면 공유 링크 발급 콜백 호출
+    if (onShareLinkClick) {
+      onShareLinkClick();
+    }
   };
 
   return (
@@ -118,29 +137,31 @@ export function LinkPreview({ profile, links, socialLinks, buttonStyle }: LinkPr
         </div>
       </div>
 
-      {/* PPOPLINK 워터마크 푸터 - 무료 사용자용, 하단 고정 */}
-      <footer className="absolute bottom-2 left-0 right-0 flex justify-center">
-        <div className="relative group">
-          {/* X 버튼 - 클릭 시 결제 페이지로 이동 */}
-          <button
-            onClick={handleRemoveWatermark}
-            className="absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800/80 text-white opacity-70 transition-all hover:opacity-100 hover:bg-primary"
-            title="PRO upgrade to remove watermark"
-          >
-            <X className="h-3 w-3" />
-          </button>
+      {/* PPOPLINK 워터마크 푸터 - BASIC 사용자용, PRO 사용자는 숨김 */}
+      {!isProUser && (
+        <footer className="absolute bottom-2 left-0 right-0 flex justify-center">
+          <div className="relative group">
+            {/* X 버튼 - 클릭 시 결제 페이지로 이동 */}
+            <button
+              onClick={handleRemoveWatermark}
+              className="absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800/80 text-white opacity-70 transition-all hover:opacity-100 hover:bg-primary"
+              title="PRO upgrade to remove watermark"
+            >
+              <X className="h-3 w-3" />
+            </button>
 
-          {/* PPOPLINK 로고 */}
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block px-4 py-1 text-sm font-extrabold text-primary/60 transition-all hover:text-primary hover:scale-105"
-          >
-            PPOPLINK
-          </a>
-        </div>
-      </footer>
+            {/* PPOPLINK 로고 */}
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-4 py-1 text-sm font-extrabold text-primary/60 transition-all hover:text-primary hover:scale-105"
+            >
+              PPOPLINK
+            </a>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

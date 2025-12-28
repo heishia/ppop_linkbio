@@ -1,5 +1,10 @@
 import { create } from "zustand";
 import { linksApi, Link, SocialLink } from "@/lib/api/links";
+import { useAuthStore } from "./authStore";
+
+// 세션 스토리지 키
+const SESSION_STORAGE_LINKS_KEY = "temp_links";
+const SESSION_STORAGE_SOCIAL_LINKS_KEY = "temp_social_links";
 
 // API 에러를 문자열로 변환하는 헬퍼 함수
 function parseApiError(error: unknown, fallbackMessage: string): string {
@@ -63,6 +68,12 @@ interface LinksState {
   ) => Promise<void>;
   deleteSocialLink: (socialLinkId: string) => Promise<void>;
   clearError: () => void;
+  
+  // 세션 스토리지 관련
+  saveLinksToSessionStorage: () => void;
+  loadLinksFromSessionStorage: () => void;
+  clearLinksSessionStorage: () => void;
+  syncLinksDataToServer: () => Promise<void>;
 }
 
 export const useLinksStore = create<LinksState>((set) => ({
@@ -94,6 +105,32 @@ export const useLinksStore = create<LinksState>((set) => ({
   },
 
   createLink: async (data) => {
+    const { isAuthenticated } = useAuthStore.getState();
+    
+    // 비로그인 상태면 세션 스토리지에 저장
+    if (!isAuthenticated) {
+      const tempLink: Link = {
+        id: `temp_${Date.now()}_${Math.random()}`,
+        user_id: "",
+        title: data.title,
+        url: data.url,
+        thumbnail_url: null,
+        display_order: get().links.length,
+        is_active: true,
+        click_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+      
+      set((state) => ({
+        links: [...state.links, tempLink],
+      }));
+      
+      get().saveLinksToSessionStorage();
+      return;
+    }
+    
+    // 로그인 상태면 서버에 저장
     set({ isLoading: true, error: null });
     try {
       const response = await linksApi.createLink(data);
@@ -153,6 +190,30 @@ export const useLinksStore = create<LinksState>((set) => ({
   },
 
   createSocialLink: async (data) => {
+    const { isAuthenticated } = useAuthStore.getState();
+    
+    // 비로그인 상태면 세션 스토리지에 저장
+    if (!isAuthenticated) {
+      const tempSocialLink: SocialLink = {
+        id: `temp_${Date.now()}_${Math.random()}`,
+        user_id: "",
+        platform: data.platform,
+        url: data.url,
+        display_order: get().socialLinks.length,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+      
+      set((state) => ({
+        socialLinks: [...state.socialLinks, tempSocialLink],
+      }));
+      
+      get().saveLinksToSessionStorage();
+      return;
+    }
+    
+    // 로그인 상태면 서버에 저장
     set({ isLoading: true, error: null });
     try {
       const response = await linksApi.createSocialLink(data);
@@ -202,4 +263,79 @@ export const useLinksStore = create<LinksState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+  
+  // 세션 스토리지 관련 메서드
+  saveLinksToSessionStorage: () => {
+    try {
+      const { links, socialLinks } = get();
+      sessionStorage.setItem(SESSION_STORAGE_LINKS_KEY, JSON.stringify(links));
+      sessionStorage.setItem(SESSION_STORAGE_SOCIAL_LINKS_KEY, JSON.stringify(socialLinks));
+    } catch (error) {
+      console.error("Failed to save links to session storage:", error);
+    }
+  },
+  
+  loadLinksFromSessionStorage: () => {
+    try {
+      const linksData = sessionStorage.getItem(SESSION_STORAGE_LINKS_KEY);
+      const socialLinksData = sessionStorage.getItem(SESSION_STORAGE_SOCIAL_LINKS_KEY);
+      
+      if (linksData) {
+        const links = JSON.parse(linksData) as Link[];
+        set({ links });
+      }
+      
+      if (socialLinksData) {
+        const socialLinks = JSON.parse(socialLinksData) as SocialLink[];
+        set({ socialLinks });
+      }
+    } catch (error) {
+      console.error("Failed to load links from session storage:", error);
+    }
+  },
+  
+  clearLinksSessionStorage: () => {
+    try {
+      sessionStorage.removeItem(SESSION_STORAGE_LINKS_KEY);
+      sessionStorage.removeItem(SESSION_STORAGE_SOCIAL_LINKS_KEY);
+    } catch (error) {
+      console.error("Failed to clear links from session storage:", error);
+    }
+  },
+  
+  syncLinksDataToServer: async () => {
+    const tempLinks = get().links.filter((link) => link.id.startsWith("temp_"));
+    const tempSocialLinks = get().socialLinks.filter((link) => link.id.startsWith("temp_"));
+    
+    if (tempLinks.length === 0 && tempSocialLinks.length === 0) return;
+    
+    try {
+      // 임시 링크들을 서버로 전송
+      for (const link of tempLinks) {
+        await get().createLink({
+          title: link.title,
+          url: link.url,
+        });
+      }
+      
+      // 임시 소셜 링크들을 서버로 전송
+      for (const socialLink of tempSocialLinks) {
+        await get().createSocialLink({
+          platform: socialLink.platform,
+          url: socialLink.url,
+        });
+      }
+      
+      // 동기화 성공 후 임시 링크 제거 및 세션 스토리지 정리
+      set((state) => ({
+        links: state.links.filter((link) => !link.id.startsWith("temp_")),
+        socialLinks: state.socialLinks.filter((link) => !link.id.startsWith("temp_")),
+      }));
+      
+      get().clearLinksSessionStorage();
+    } catch (error) {
+      console.error("Failed to sync links data to server:", error);
+      // 에러가 발생해도 세션 스토리지는 유지 (재시도 가능)
+    }
+  },
 }));

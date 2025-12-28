@@ -1,34 +1,63 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import analyticsApi, { AnalyticsSummary } from "@/lib/api/analytics";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useAuthStore } from "@/store/authStore";
 
 export default function AnalyticsPage() {
+  const router = useRouter();
   const isMobile = useIsMobile();
+  const { isAuthenticated, subscription, isLoading: authLoading } = useAuthStore();
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // PRO 권한 체크
+  const isProUser = subscription?.plan === "PRO" && subscription?.status === "ACTIVE" && subscription?.hasAccess;
+
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        setIsLoading(true);
-        const data = await analyticsApi.getAnalytics();
-        setAnalytics(data);
-      } catch (err) {
-        console.error("Failed to fetch analytics:", err);
-        setError("Failed to load analytics data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // 인증 상태 확인
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
+      return;
+    }
 
-    fetchAnalytics();
-  }, []);
+    // PRO 권한 체크
+    if (!authLoading && isAuthenticated && !isProUser) {
+      setError("Analytics feature is available for PRO plan only. Please upgrade to PRO.");
+      setIsLoading(false);
+      return;
+    }
 
-  if (isLoading) {
+    // PRO 사용자만 통계 데이터 로드
+    if (isAuthenticated && isProUser) {
+      const fetchAnalytics = async () => {
+        try {
+          setIsLoading(true);
+          const data = await analyticsApi.getAnalytics();
+          setAnalytics(data);
+          setError(null);
+        } catch (err: any) {
+          console.error("Failed to fetch analytics:", err);
+          // 백엔드에서 PRO 권한 체크 실패 시 에러 메시지 표시
+          if (err?.response?.status === 403 || err?.response?.data?.detail?.includes("PRO")) {
+            setError("Analytics feature is available for PRO plan only. Please upgrade to PRO.");
+          } else {
+            setError("Failed to load analytics data");
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchAnalytics();
+    }
+  }, [isAuthenticated, isProUser, authLoading, router]);
+
+  if (authLoading || isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -38,8 +67,20 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
-        {error}
+      <div className="space-y-4 px-4 py-8">
+        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
+          {error}
+        </div>
+        {error.includes("PRO") && (
+          <div className="text-center">
+            <button
+              onClick={() => router.push("/dashboard/pricing")}
+              className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-all hover:bg-primary/90"
+            >
+              Upgrade to PRO
+            </button>
+          </div>
+        )}
       </div>
     );
   }

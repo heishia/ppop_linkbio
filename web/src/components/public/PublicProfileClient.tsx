@@ -20,6 +20,9 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
 
   // 사용자가 설정한 배경색 사용 (없으면 기본 화이트)
   const bgColor = profile.background_color || DEFAULT_BACKGROUND_COLOR;
+  
+  // PRO 사용자 여부 확인
+  const isProUser = profile.is_pro_user || false;
 
   return (
     <main
@@ -61,17 +64,19 @@ export function PublicProfileClient({ profile }: PublicProfileClientProps) {
         </section>
       </MobileContainer>
 
-      {/* PPOPLINK 워터마크 푸터 - 무료 사용자용, 하단 고정 */}
-      <footer className="fixed bottom-0 left-0 right-0 flex justify-center py-3 pointer-events-none">
-        <a
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pointer-events-auto text-2xl sm:text-3xl font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
-        >
-          PPOPLINK
-        </a>
-      </footer>
+      {/* PPOPLINK 워터마크 푸터 - BASIC 사용자용, PRO 사용자는 숨김 */}
+      {!isProUser && (
+        <footer className="fixed bottom-0 left-0 right-0 flex justify-center py-3 pointer-events-none">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto text-2xl sm:text-3xl font-bold text-primary/50 transition-all hover:text-primary hover:scale-105"
+          >
+            PPOPLINK
+          </a>
+        </footer>
+      )}
     </main>
   );
 }

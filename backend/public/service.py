@@ -11,6 +11,7 @@ from backend.core.logger import get_logger
 from backend.core.models import PublicProfile, Link, SocialLink, SocialPlatform
 from backend.links.service import link_service
 from backend.analytics.service import analytics_service
+from backend.auth.service import auth_service
 
 logger = get_logger(__name__)
 
@@ -36,13 +37,21 @@ class PublicService:
             raise UserNotFoundError(detail="Profile not found")
         
         user_data = user_result.data[0]
-        user_id = user_data["id"]
+        user_id = user_data["id"]  # PPOP Auth user_id와 동일
         
         # 활성화된 링크 조회
         links = await self._get_active_links(user_id)
         
         # 활성화된 소셜 링크 조회
         social_links = await self._get_active_social_links(user_id)
+        
+        # 프로필 소유자의 PRO 구독 상태 확인 (관리자 API 사용)
+        is_pro_user = False
+        try:
+            is_pro_user = await auth_service.check_user_subscription_by_user_id(user_id)
+        except Exception as e:
+            logger.warning(f"Failed to check subscription status for user {user_id}: {e}")
+            # 에러 발생 시 기본값 False 사용 (워터마크 표시)
         
         return PublicProfile(
             public_link_id=user_data["public_link_id"],
@@ -54,7 +63,8 @@ class PublicService:
             background_color=user_data.get("background_color"),
             theme=user_data.get("theme", "default"),
             links=links,
-            social_links=social_links
+            social_links=social_links,
+            is_pro_user=is_pro_user
         )
     
     async def record_click(

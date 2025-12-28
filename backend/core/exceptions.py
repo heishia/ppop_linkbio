@@ -124,3 +124,12 @@ class ExternalServiceError(BaseAppException):
     status_code = 502
     detail = "External service error"
 
+
+class ServiceNotFoundError(BaseAppException):
+    status_code = 404
+    detail = "Service code not found"
+
+
+class SubscriptionError(BaseAppException):
+    status_code = 502
+    detail = "Failed to check subscription status"

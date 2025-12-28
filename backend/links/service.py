@@ -15,7 +15,11 @@ from backend.core.exceptions import (
     AuthorizationError
 )
 from backend.core.logger import get_logger
-from backend.core.models import Link, SocialLink, PlanType, UserPlan, SocialPlatform
+from backend.core.models import (
+    Link, SocialLink, PlanType, UserPlan, SocialPlatform,
+    SubscriptionStatusResponse, SubscriptionPlan, SubscriptionStatus
+)
+from backend.auth.service import auth_service
 from backend.links.schemas import (
     LinkCreateRequest,
     LinkUpdateRequest,
@@ -39,8 +43,8 @@ class LinkService:
         
         return [self._map_to_link(data) for data in result.data]
     
-    async def create_link(self, user_id: UUID, request: LinkCreateRequest) -> Link:
-        await self._check_link_limit(user_id)
+    async def create_link(self, user_id: UUID, request: LinkCreateRequest, access_token: Optional[str] = None) -> Link:
+        await self._check_link_limit(user_id, access_token)
         
         # 현재 최대 display_order 가져오기
         max_order = await self._get_max_display_order(user_id, self.TABLE_LINKS)
@@ -138,9 +142,10 @@ class LinkService:
     async def create_social_link(
         self,
         user_id: UUID,
-        request: SocialLinkCreateRequest
+        request: SocialLinkCreateRequest,
+        access_token: Optional[str] = None
     ) -> SocialLink:
-        await self._check_social_link_limit(user_id)
+        await self._check_social_link_limit(user_id, access_token)
         
         max_order = await self._get_max_display_order(user_id, self.TABLE_SOCIAL_LINKS)
         
@@ -252,7 +257,32 @@ class LinkService:
             return result.data[0]["display_order"]
         return -1
     
-    async def _get_user_plan(self, user_id: UUID) -> UserPlan:
+    async def _get_user_plan(self, user_id: UUID, access_token: Optional[str] = None) -> UserPlan:
+        """
+        사용자 플랜 조회 (PPOP Auth API 우선, 실패 시 로컬 DB)
+        
+        Args:
+            user_id: 사용자 ID
+            access_token: PPOP Auth access token (선택사항, 있으면 PPOP Auth API 호출)
+        """
+        # access_token이 있으면 PPOP Auth API 호출
+        if access_token:
+            try:
+                subscription = await auth_service.get_subscription_status(access_token)
+                # PPOP Auth 응답을 UserPlan으로 변환
+                plan_type = PlanType.PRO if subscription.plan == SubscriptionPlan.PRO else PlanType.BASIC
+                return UserPlan(
+                    id=user_id,
+                    user_id=user_id,
+                    plan_type=plan_type,
+                    started_at=datetime.utcnow(),
+                    expires_at=subscription.expiresAt
+                )
+            except Exception as e:
+                logger.warning(f"Failed to get subscription from PPOP Auth, falling back to local DB: {e}")
+                # PPOP Auth API 호출 실패 시 로컬 DB 조회로 폴백
+        
+        # 로컬 DB에서 플랜 조회
         result = db.table(self.TABLE_USER_PLANS).select("*").eq(
             "user_id", str(user_id)
         ).order("started_at", desc=True).limit(1).execute()
@@ -261,7 +291,7 @@ class LinkService:
             return UserPlan(
                 id=user_id,
                 user_id=user_id,
-                plan_type=PlanType.FREE,
+                plan_type=PlanType.BASIC,
                 started_at=datetime.utcnow()
             )
         
@@ -275,8 +305,8 @@ class LinkService:
             created_at=data.get("created_at")
         )
     
-    async def _check_link_limit(self, user_id: UUID) -> None:
-        plan = await self._get_user_plan(user_id)
+    async def _check_link_limit(self, user_id: UUID, access_token: Optional[str] = None) -> None:
+        plan = await self._get_user_plan(user_id, access_token)
         
         if plan.plan_type == PlanType.PRO:
             return
@@ -288,11 +318,11 @@ class LinkService:
         current_count = result.count or 0
         if current_count >= settings.FREE_MAX_LINKS:
             raise LinkLimitExceededError(
-                detail=f"Free plan allows up to {settings.FREE_MAX_LINKS} links"
+                detail=f"Basic plan allows up to {settings.FREE_MAX_LINKS} links"
             )
     
-    async def _check_social_link_limit(self, user_id: UUID) -> None:
-        plan = await self._get_user_plan(user_id)
+    async def _check_social_link_limit(self, user_id: UUID, access_token: Optional[str] = None) -> None:
+        plan = await self._get_user_plan(user_id, access_token)
         
         if plan.plan_type == PlanType.PRO:
             return
@@ -304,7 +334,7 @@ class LinkService:
         current_count = result.count or 0
         if current_count >= settings.FREE_MAX_SOCIAL_LINKS:
             raise SocialLinkLimitExceededError(
-                detail=f"Free plan allows up to {settings.FREE_MAX_SOCIAL_LINKS} social links"
+                detail=f"Basic plan allows up to {settings.FREE_MAX_SOCIAL_LINKS} social links"
             )
     
     def _map_to_link(self, data: dict) -> Link:

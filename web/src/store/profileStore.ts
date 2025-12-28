@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { profileApi } from "@/lib/api/profile";
 import { User, ButtonStyle } from "@/lib/api/auth";
+import { useAuthStore } from "./authStore";
+
+// 세션 스토리지 키
+const SESSION_STORAGE_PROFILE_KEY = "temp_profile";
 
 // API 에러를 문자열로 변환하는 헬퍼 함수
 function parseApiError(error: unknown, fallbackMessage: string): string {
@@ -58,6 +62,12 @@ interface ProfileState {
   uploadProfileImage: (file: File) => Promise<void>;
   uploadBackgroundImage: (file: File) => Promise<void>;
   clearError: () => void;
+  
+  // 세션 스토리지 관련
+  saveToSessionStorage: (data: Partial<User>) => void;
+  loadFromSessionStorage: () => Partial<User> | null;
+  clearSessionStorage: () => void;
+  syncSessionDataToServer: () => Promise<void>;
 }
 
 export const useProfileStore = create<ProfileState>((set) => ({
@@ -79,6 +89,21 @@ export const useProfileStore = create<ProfileState>((set) => ({
   },
 
   updateProfile: async (data) => {
+    const { isAuthenticated } = useAuthStore.getState();
+    
+    // 비로그인 상태면 세션 스토리지에 저장
+    if (!isAuthenticated) {
+      const currentProfile = get().profile;
+      const tempProfile = {
+        ...currentProfile,
+        ...data,
+      } as Partial<User>;
+      get().saveToSessionStorage(tempProfile);
+      set({ profile: tempProfile as User });
+      return;
+    }
+    
+    // 로그인 상태면 서버에 저장
     set({ isLoading: true, error: null });
     try {
       const response = await profileApi.updateProfile(data);
@@ -145,4 +170,52 @@ export const useProfileStore = create<ProfileState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+  
+  // 세션 스토리지 관련 메서드
+  saveToSessionStorage: (data: Partial<User>) => {
+    try {
+      sessionStorage.setItem(SESSION_STORAGE_PROFILE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error("Failed to save profile to session storage:", error);
+    }
+  },
+  
+  loadFromSessionStorage: () => {
+    try {
+      const data = sessionStorage.getItem(SESSION_STORAGE_PROFILE_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error("Failed to load profile from session storage:", error);
+      return null;
+    }
+  },
+  
+  clearSessionStorage: () => {
+    try {
+      sessionStorage.removeItem(SESSION_STORAGE_PROFILE_KEY);
+    } catch (error) {
+      console.error("Failed to clear profile from session storage:", error);
+    }
+  },
+  
+  syncSessionDataToServer: async () => {
+    const tempProfile = get().loadFromSessionStorage();
+    if (!tempProfile) return;
+    
+    try {
+      // 세션 스토리지의 프로필 데이터를 서버로 전송
+      await get().updateProfile({
+        display_name: tempProfile.display_name,
+        bio: tempProfile.bio,
+        background_color: tempProfile.background_color,
+        button_style: tempProfile.button_style as ButtonStyle,
+      });
+      
+      // 동기화 성공 후 세션 스토리지 정리
+      get().clearSessionStorage();
+    } catch (error) {
+      console.error("Failed to sync profile data to server:", error);
+      // 에러가 발생해도 세션 스토리지는 유지 (재시도 가능)
+    }
+  },
 }));
