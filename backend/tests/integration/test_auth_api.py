@@ -49,14 +49,25 @@ class TestOAuthCallbackEndpoint:
 class TestAuthMeEndpoint:
     """Test /api/auth/me endpoint"""
     
-    def test_get_me_without_auth(self, client):
+    def test_get_me_without_auth(self, client, test_app):
         """Test getting current user without authentication"""
+        # Ensure no dependency override is set
+        from backend.auth.router import get_current_user
+        if get_current_user in test_app.dependency_overrides:
+            del test_app.dependency_overrides[get_current_user]
+        
         response = client.get("/api/auth/me")
         
-        assert response.status_code == 403
+        # HTTPBearer는 토큰이 없을 때 401을 반환합니다
+        assert response.status_code == 401
     
-    def test_get_me_with_invalid_token(self, client):
+    def test_get_me_with_invalid_token(self, client, test_app):
         """Test getting current user with invalid token"""
+        # Ensure no dependency override is set
+        from backend.auth.router import get_current_user
+        if get_current_user in test_app.dependency_overrides:
+            del test_app.dependency_overrides[get_current_user]
+        
         response = client.get(
             "/api/auth/me",
             headers={"Authorization": "Bearer invalid_token"}

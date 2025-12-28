@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class PlanType(str, Enum):
@@ -94,8 +94,7 @@ class User(UserBase, TimestampMixin):
     is_active: bool = True
     is_admin: bool = False
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserInDB(User):
@@ -113,8 +112,7 @@ class UserPlan(UserPlanBase, TimestampMixin):
     started_at: datetime
     expires_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Link Models
@@ -142,8 +140,7 @@ class Link(LinkBase, TimestampMixin):
     is_active: bool = True
     click_count: int = 0
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LinkReorder(BaseModel):
@@ -171,8 +168,7 @@ class SocialLink(SocialLinkBase, TimestampMixin):
     display_order: int = 0
     is_active: bool = True
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Public Profile Response

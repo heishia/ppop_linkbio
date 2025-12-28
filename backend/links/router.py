@@ -24,6 +24,7 @@ from backend.links.schemas import (
 from backend.links.service import link_service
 
 router = APIRouter()
+security = HTTPBearer()
 
 
 # Link Endpoints
